@@ -1,0 +1,105 @@
+<script>
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+// ⭐ PARALLAX STARS (dekat & jauh)
+let stars = [];
+for (let i = 0; i < 300; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2,
+        speed: Math.random() * 1.5
+    });
+}
+
+// 🌠 SHOOTING STAR
+let shootingStars = [];
+
+function createShootingStar() {
+    shootingStars.push({
+        x: Math.random() * canvas.width,
+        y: 0,
+        len: Math.random() * 80 + 50,
+        speed: Math.random() * 8 + 6
+    });
+}
+
+setInterval(createShootingStar, 2000);
+
+// 🌌 NEBULA DINAMIS
+let t = 0;
+function drawNebula() {
+    let gradient = ctx.createRadialGradient(
+        canvas.width/2 + Math.sin(t)*100,
+        canvas.height/2 + Math.cos(t)*100,
+        100,
+        canvas.width/2,
+        canvas.height/2,
+        canvas.width
+    );
+
+    gradient.addColorStop(0, "rgba(120, 0, 255, 0.5)");
+    gradient.addColorStop(0.4, "rgba(0, 150, 255, 0.3)");
+    gradient.addColorStop(0.7, "rgba(255, 0, 150, 0.2)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 1)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    t += 0.01;
+}
+
+// 🎬 DRAW LOOP
+function draw() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    drawNebula();
+
+    // ⭐ stars
+    for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        s.y += s.speed;
+
+        if (s.y > canvas.height) {
+            s.y = 0;
+            s.x = Math.random() * canvas.width;
+        }
+    }
+
+    // 🌠 shooting stars
+    for (let i = 0; i < shootingStars.length; i++) {
+        let s = shootingStars[i];
+
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - s.len, s.y + s.len);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        s.x += s.speed;
+        s.y += s.speed;
+
+        if (s.y > canvas.height) {
+            shootingStars.splice(i, 1);
+        }
+    }
+
+    requestAnimationFrame(draw);
+}
+
+draw();
+</script>

@@ -1,105 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Extreme Tilt Hyper-Galaxy</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        canvas { position: fixed; top: 0; left: 0; display: block; }
+        #text {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 28px; font-weight: bold;
+            text-align: center; width: 85%; color: white;
+            z-index: 100; pointer-events: none;
+            text-shadow: 0 0 20px rgba(0,0,0,1), 0 0 25px rgba(0,0,0,0.9), 0 0 10px rgba(255,255,255,0.4);
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="galaxy"></canvas>
+<div id="text"></div>
+<audio id="music" src="j.mp3" preload="auto"></audio>
+
 <script>
-const canvas = document.getElementById("stars");
+const canvas = document.getElementById("galaxy");
 const ctx = canvas.getContext("2d");
+
+let stars = [];
+let backgroundStars = [];
+let meteors = [];
+
+const GALAXY_STARS = 16000;
+const BG_STARS_COUNT = 800;
 
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    initGalaxy();
 }
-resize();
 window.addEventListener("resize", resize);
 
-// ⭐ PARALLAX STARS (dekat & jauh)
-let stars = [];
-for (let i = 0; i < 300; i++) {
-    stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2,
-        speed: Math.random() * 1.5
-    });
+function initGalaxy() {
+    stars = [];
+    backgroundStars = [];
+    let colors = [180, 200, 250, 280, 310, 350]; 
+
+    for (let i = 0; i < GALAXY_STARS; i++) {
+        let dist = Math.pow(Math.random(), 3) * (Math.max(canvas.width, canvas.height) * 0.9);
+        let armCount = 7;
+        let arm = (i % armCount) * (Math.PI * 2 / armCount);
+        let spiralForce = dist * 0.012;
+        let angle = spiralForce + arm + (Math.random() * 1.2);
+        let depth = 1 - dist / (Math.max(canvas.width, canvas.height));
+        let size = (Math.random() < 0.9 ? Math.random() * 0.5 + 0.1 : Math.random() * 1.4 + 0.6) * (0.5 + depth);
+
+        stars.push({
+            dist: dist,
+            angle: angle,
+            size: size,
+            hue: colors[Math.floor(Math.random() * colors.length)],
+            opacity: 0.2 + Math.random() * 0.8,
+            twinkle: 0.005 + Math.random() * 0.02,
+            speed: (0.00002 + Math.random() * 0.00005) * (1.1 - dist / canvas.width)
+        });
+    }
+
+    for (let i = 0; i < BG_STARS_COUNT; i++) {
+        backgroundStars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 0.7,
+            opacity: Math.random(),
+            twinkle: 0.005 + Math.random() * 0.01
+        });
+    }
 }
 
-// 🌠 SHOOTING STAR
-let shootingStars = [];
+function drawMeteor() {
+    if (Math.random() < 0.05) {
+        let type = Math.random();
+        let speed = 6 + Math.random() * 6;
+        let scale = type < 0.6 ? 1 : type < 0.9 ? 1.5 : 2.5;
 
-function createShootingStar() {
-    shootingStars.push({
-        x: Math.random() * canvas.width,
-        y: 0,
-        len: Math.random() * 80 + 50,
-        speed: Math.random() * 8 + 6
-    });
+        meteors.push({
+            x: Math.random() * canvas.width,
+            y: -50,
+            vx: -speed * (0.6 + Math.random() * 0.4),
+            vy: speed,
+            len: (100 + Math.random() * 120) * scale,
+            weight: 1 * scale,
+            alpha: 1,
+            life: 0
+        });
+    }
+
+    ctx.lineCap = "round";
+
+    for (let i = meteors.length - 1; i >= 0; i--) {
+        let m = meteors[i];
+
+        m.x += m.vx;
+        m.y += m.vy;
+        m.life += 0.02;
+        m.alpha = 1 - m.life;
+
+        if (m.alpha <= 0) {
+            meteors.splice(i, 1);
+            continue;
+        }
+
+        let grad = ctx.createLinearGradient(
+            m.x, m.y,
+            m.x - m.vx * m.len * 0.1,
+            m.y - m.vy * m.len * 0.1
+        );
+
+        grad.addColorStop(0, `rgba(255,255,255,${m.alpha})`);
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+
+        ctx.beginPath();
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = m.weight;
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(
+            m.x - m.vx * m.len * 0.1,
+            m.y - m.vy * m.len * 0.1
+        );
+        ctx.stroke();
+    }
 }
 
-setInterval(createShootingStar, 2000);
-
-// 🌌 NEBULA DINAMIS
-let t = 0;
-function drawNebula() {
-    let gradient = ctx.createRadialGradient(
-        canvas.width/2 + Math.sin(t)*100,
-        canvas.height/2 + Math.cos(t)*100,
-        100,
-        canvas.width/2,
-        canvas.height/2,
-        canvas.width
-    );
-
-    gradient.addColorStop(0, "rgba(120, 0, 255, 0.5)");
-    gradient.addColorStop(0.4, "rgba(0, 150, 255, 0.3)");
-    gradient.addColorStop(0.7, "rgba(255, 0, 150, 0.2)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 1)");
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    t += 0.01;
-}
-
-// 🎬 DRAW LOOP
-function draw() {
+function animate() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    drawNebula();
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
 
-    // ⭐ stars
-    for (let s of stars) {
+    backgroundStars.forEach(s => {
+        s.opacity += s.twinkle;
+        if (s.opacity > 1 || s.opacity < 0.1) s.twinkle *= -1;
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+        ctx.fillRect(s.x, s.y, s.size, s.size);
+    });
+
+    stars.forEach(s => {
+        s.angle += s.speed + 0.00005;
+        s.opacity += s.twinkle * 1.5;
+        if (s.opacity > 1 || s.opacity < 0.2) s.twinkle *= -1;
+
+        let perspective = 1 + (1 - s.dist / canvas.width) * 0.6;
+        let x = cx + Math.cos(s.angle) * s.dist * perspective;
+        let y = cy + Math.sin(s.angle) * s.dist * 0.3 * perspective;
+
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
+        ctx.arc(x, y, s.size * 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${s.hue}, 100%, 75%, ${s.opacity * 0.25})`;
         ctx.fill();
 
-        s.y += s.speed;
-
-        if (s.y > canvas.height) {
-            s.y = 0;
-            s.x = Math.random() * canvas.width;
-        }
-    }
-
-    // 🌠 shooting stars
-    for (let i = 0; i < shootingStars.length; i++) {
-        let s = shootingStars[i];
-
         ctx.beginPath();
-        ctx.moveTo(s.x, s.y);
-        ctx.lineTo(s.x - s.len, s.y + s.len);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.arc(x, y, s.size * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+        ctx.fill();
+    });
 
-        s.x += s.speed;
-        s.y += s.speed;
-
-        if (s.y > canvas.height) {
-            shootingStars.splice(i, 1);
-        }
-    }
-
-    requestAnimationFrame(draw);
+    drawMeteor();
+    requestAnimationFrame(animate);
 }
 
-draw();
+resize();
+animate();
+
+/* ===== LYRICS SYNC ===== */
+const music = document.getElementById("music");
+const el = document.getElementById("text");
+
+const lyrics = [
+    { time: 0, text: "Say you want the moon 🌙" },
+    { time: 3, text: "Watch me learn to fly 🕊️" },
+    { time: 6, text: "Ain't no mountain you could point to" },
+    { time: 9, text: "I wouldn't climb" },
+    { time: 12, text: "It's crazy, but it's true" },
+    { time: 15, text: "There's nothing I won't do" },
+    { time: 18, text: "I'd risk it all for you ❤️" }
+];
+
+let currentIndex = 0;
+
+function syncLyrics() {
+    const t = music.currentTime;
+
+    if (currentIndex < lyrics.length - 1 && t >= lyrics[currentIndex + 1].time) {
+        currentIndex++;
+    }
+
+    el.innerHTML = lyrics[currentIndex].text;
+
+    if (currentIndex < lyrics.length - 1) {
+        requestAnimationFrame(syncLyrics);
+    }
+}
+
+/* START ON CLICK */
+window.addEventListener("click", () => {
+    music.play();
+    syncLyrics();
+}, { once: true });
 </script>
+
+</body>
+</html>

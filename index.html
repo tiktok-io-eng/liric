@@ -1,213 +1,673 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Extreme Tilt Hyper-Galaxy</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        canvas { position: fixed; top: 0; left: 0; display: block; }
-        #text {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 28px; font-weight: bold;
-            text-align: center; width: 85%; color: white;
-            z-index: 100; pointer-events: none;
-            text-shadow: 0 0 20px rgba(0,0,0,1), 0 0 25px rgba(0,0,0,0.9), 0 0 10px rgba(255,255,255,0.4);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galaxy Dreamscape</title>
+  <style>
+    :root {
+      --text: rgba(247, 243, 255, 0.96);
+      --muted: rgba(224, 218, 245, 0.78);
+      --panel: rgba(5, 8, 20, 0.22);
+      --line: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #02040d;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .lyrics-wrap {
+      width: min(860px, 100%);
+      text-align: center;
+      transform: translateY(18vh);
+      text-shadow:
+        0 0 16px rgba(22, 16, 50, 0.85),
+        0 0 40px rgba(0, 0, 0, 0.8),
+        0 0 70px rgba(72, 113, 236, 0.16);
+    }
+
+    .lyric-main {
+      min-height: 2.6em;
+      color: var(--text);
+      font-size: clamp(1.2rem, 3vw, 2.15rem);
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: 0.02em;
+      transition: opacity 420ms ease, transform 420ms ease, filter 420ms ease;
+    }
+
+    .lyric-sub {
+      min-height: 1.8em;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: clamp(0.92rem, 1.8vw, 1.14rem);
+      font-weight: 500;
+      line-height: 1.5;
+      transition: opacity 420ms ease, transform 420ms ease;
+    }
+
+    .hint {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 8;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(7, 10, 24, 0.38);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(241, 236, 255, 0.9);
+      backdrop-filter: blur(10px);
+      font-size: 0.83rem;
+      pointer-events: none;
+    }
+
+    .panel {
+      position: fixed;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      z-index: 8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+    }
+
+    .panel-info {
+      color: rgba(236, 231, 248, 0.88);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .panel-info strong {
+      display: block;
+      margin-bottom: 3px;
+      color: white;
+      font-size: 0.94rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    button {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 180ms ease, background 180ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    @media (max-width: 760px) {
+      .lyrics-wrap {
+        transform: translateY(12vh);
+      }
+
+      .panel {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .controls {
+        width: 100%;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
+  <canvas id="scene"></canvas>
 
-<canvas id="galaxy"></canvas>
-<div id="text"></div>
-<audio id="music" src="j.mp3" preload="auto"></audio>
+  <div class="hint">Klik play untuk mulai lagu, lirik, dan suasana galaxy</div>
 
-<script>
-const canvas = document.getElementById("galaxy");
-const ctx = canvas.getContext("2d");
+  <div class="overlay">
+    <div class="lyrics-wrap">
+      <div id="lyricMain" class="lyric-main">Tekan play untuk mulai lagu.</div>
+      <div id="lyricSub" class="lyric-sub"></div>
+    </div>
+  </div>
 
-let stars = [];
-let backgroundStars = [];
-let meteors = [];
+  <div class="panel">
+    <div class="panel-info">
+      <strong>Galaxy Dreamscape</strong>
+      Galaxy spiral lebih halus, planet dan bulan lebih natural, meteor lembut, dan lirik mengikuti musik.
+    </div>
+    <div class="controls">
+      <button id="playButton" type="button">Play Lagu</button>
+      <button id="nextLyricButton" type="button">Lirik Berikutnya</button>
+    </div>
+  </div>
 
-const GALAXY_STARS = 16000;
-const BG_STARS_COUNT = 800;
+  <audio id="music" src="j.mp3" preload="auto" loop></audio>
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    initGalaxy();
-}
-window.addEventListener("resize", resize);
+  <script>
+    const canvas = document.getElementById("scene");
+    const ctx = canvas.getContext("2d");
+    const music = document.getElementById("music");
+    const lyricMain = document.getElementById("lyricMain");
+    const lyricSub = document.getElementById("lyricSub");
+    const playButton = document.getElementById("playButton");
+    const nextLyricButton = document.getElementById("nextLyricButton");
 
-function initGalaxy() {
-    stars = [];
-    backgroundStars = [];
-    let colors = [180, 200, 250, 280, 310, 350]; 
+    let w = 0;
+    let h = 0;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let time = 0;
+    let backgroundStars = [];
+    let galaxyDust = [];
+    let brightStars = [];
+    let meteors = [];
+    let planets = [];
+    let lyricIndex = 0;
+    let lyricFrame = null;
 
-    for (let i = 0; i < GALAXY_STARS; i++) {
-        let dist = Math.pow(Math.random(), 3) * (Math.max(canvas.width, canvas.height) * 0.9);
-        let armCount = 7;
-        let arm = (i % armCount) * (Math.PI * 2 / armCount);
-        let spiralForce = dist * 0.012;
-        let angle = spiralForce + arm + (Math.random() * 1.2);
-        let depth = 1 - dist / (Math.max(canvas.width, canvas.height));
-        let size = (Math.random() < 0.9 ? Math.random() * 0.5 + 0.1 : Math.random() * 1.4 + 0.6) * (0.5 + depth);
+    const lyrics = [
+      { time: 0, main: "Say you want the moon", sub: "Watch me learn to fly" },
+      { time: 3, main: "Ain't no mountain you could point to", sub: "I wouldn't climb" },
+      { time: 8, main: "It's crazy, but it's true", sub: "There's nothing I won't do" },
+      { time: 13, main: "I'd risk it all for you", sub: "" },
+      { time: 18, main: "Keep your eyes on the sky", sub: "Hear the stars sing too" }
+    ];
 
-        stars.push({
-            dist: dist,
-            angle: angle,
-            size: size,
-            hue: colors[Math.floor(Math.random() * colors.length)],
-            opacity: 0.2 + Math.random() * 0.8,
-            twinkle: 0.005 + Math.random() * 0.02,
-            speed: (0.00002 + Math.random() * 0.00005) * (1.1 - dist / canvas.width)
-        });
+    function rand(min, max) {
+      return Math.random() * (max - min) + min;
     }
 
-    for (let i = 0; i < BG_STARS_COUNT; i++) {
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildScene();
+    }
+
+    function buildScene() {
+      backgroundStars = [];
+      galaxyDust = [];
+      brightStars = [];
+      meteors = [];
+      planets = [];
+
+      const bgCount = Math.floor((w * h) / 2200);
+      const dustCount = Math.floor((w * h) / 260);
+
+      for (let i = 0; i < bgCount; i++) {
         backgroundStars.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            size: Math.random() * 0.7,
-            opacity: Math.random(),
-            twinkle: 0.005 + Math.random() * 0.01
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: rand(0.35, 1.5),
+          alpha: rand(0.18, 0.82),
+          base: rand(0.18, 0.82),
+          speed: rand(0.012, 0.04),
+          phase: rand(0, Math.PI * 2),
+          hue: rand(205, 235)
         });
+      }
+
+      for (let i = 0; i < dustCount; i++) {
+        const maxRadius = Math.min(w, h) * 0.44;
+        const dist = Math.pow(Math.random(), 1.7) * maxRadius;
+        const arm = (i % 4) * ((Math.PI * 2) / 4);
+        const spiral = dist * 0.03;
+        const jitter = rand(-0.45, 0.45);
+        const palette = [32, 40, 224, 240, 286, 316];
+        galaxyDust.push({
+          dist,
+          angle: arm + spiral + jitter,
+          size: rand(0.5, 2.1) * (1.1 - dist / maxRadius),
+          alpha: rand(0.08, 0.48),
+          hue: palette[Math.floor(Math.random() * palette.length)],
+          drift: rand(0.00003, 0.0001),
+          squash: rand(0.28, 0.38),
+          depth: rand(0.88, 1.16)
+        });
+      }
+
+      for (let i = 0; i < 36; i++) {
+        brightStars.push({
+          x: rand(0, w),
+          y: rand(0, h),
+          glow: rand(10, 26),
+          alpha: rand(0.15, 0.42),
+          pulse: rand(0.014, 0.04),
+          phase: rand(0, Math.PI * 2)
+        });
+      }
+
+      planets = [
+        {
+          type: "moon",
+          cx: w * 0.14,
+          cy: h * 0.2,
+          radius: Math.min(w, h) * 0.048,
+          orbitX: 12,
+          orbitY: 8,
+          speed: 0.0006
+        },
+        {
+          type: "planet",
+          cx: w * 0.84,
+          cy: h * 0.24,
+          radius: Math.min(w, h) * 0.073,
+          orbitX: 18,
+          orbitY: 12,
+          speed: 0.00036,
+          ring: true
+        },
+        {
+          type: "planet",
+          cx: w * 0.78,
+          cy: h * 0.75,
+          radius: Math.min(w, h) * 0.03,
+          orbitX: 10,
+          orbitY: 6,
+          speed: 0.00092,
+          ring: false
+        }
+      ];
     }
-}
 
-function drawMeteor() {
-    if (Math.random() < 0.05) {
-        let type = Math.random();
-        let speed = 6 + Math.random() * 6;
-        let scale = type < 0.6 ? 1 : type < 0.9 ? 1.5 : 2.5;
+    function drawBackground() {
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, "#010208");
+      bg.addColorStop(0.5, "#040715");
+      bg.addColorStop(1, "#02030a");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
 
+      const haze = ctx.createRadialGradient(w * 0.53, h * 0.46, 20, w * 0.53, h * 0.46, Math.min(w, h) * 0.55);
+      haze.addColorStop(0, "rgba(255,220,165,0.14)");
+      haze.addColorStop(0.22, "rgba(255,163,217,0.08)");
+      haze.addColorStop(0.46, "rgba(107,122,255,0.11)");
+      haze.addColorStop(0.72, "rgba(97,54,181,0.05)");
+      haze.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = haze;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function drawBackgroundStars() {
+      for (const star of backgroundStars) {
+        const flicker = (Math.sin(time * star.speed + star.phase) + 1) / 2;
+        const alpha = star.base * 0.7 + flicker * 0.45;
+
+        const glow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.r * 7.5);
+        glow.addColorStop(0, `hsla(${star.hue},100%,92%,${alpha * 0.55})`);
+        glow.addColorStop(0.45, `hsla(${star.hue},100%,86%,${alpha * 0.18})`);
+        glow.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.r * 7.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (star.r > 1.08 && alpha > 0.5) {
+          ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.45})`;
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(star.x - star.r * 3, star.y);
+          ctx.lineTo(star.x + star.r * 3, star.y);
+          ctx.moveTo(star.x, star.y - star.r * 3);
+          ctx.lineTo(star.x, star.y + star.r * 3);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function drawGalaxy() {
+      const cx = w * 0.53;
+      const cy = h * 0.46;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-0.34 + Math.sin(time * 0.00005) * 0.03);
+
+      for (const dust of galaxyDust) {
+        dust.angle += dust.drift;
+        const spin = time * 0.00025;
+        const angle = dust.angle + spin;
+        const x = Math.cos(angle) * dust.dist * dust.depth;
+        const y = Math.sin(angle) * dust.dist * dust.squash * dust.depth;
+
+        ctx.fillStyle = `hsla(${dust.hue},100%,74%,${dust.alpha * 0.16})`;
+        ctx.beginPath();
+        ctx.arc(x, y, dust.size * 5.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `hsla(${dust.hue},100%,80%,${dust.alpha * 0.28})`;
+        ctx.beginPath();
+        ctx.arc(x, y, dust.size * 1.85, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (dust.size > 0.9) {
+          ctx.fillStyle = `rgba(255,255,255,${Math.min(dust.alpha + 0.08, 0.85)})`;
+          ctx.beginPath();
+          ctx.arc(x, y, Math.max(0.35, dust.size * 0.38), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const core = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.min(w, h) * 0.15);
+      core.addColorStop(0, "rgba(255,248,228,0.96)");
+      core.addColorStop(0.14, "rgba(255,234,188,0.84)");
+      core.addColorStop(0.42, "rgba(255,183,110,0.26)");
+      core.addColorStop(1, "rgba(255,183,110,0)");
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.min(w, h) * 0.15, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawBrightStars() {
+      for (const star of brightStars) {
+        const pulse = (Math.sin(time * star.pulse + star.phase) + 1) / 2;
+        const alpha = star.alpha + pulse * 0.35;
+
+        const glow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.glow);
+        glow.addColorStop(0, `rgba(255,255,255,${alpha})`);
+        glow.addColorStop(0.3, `rgba(180,205,255,${alpha * 0.28})`);
+        glow.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.glow, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.8})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(star.x - star.glow * 0.38, star.y);
+        ctx.lineTo(star.x + star.glow * 0.38, star.y);
+        ctx.moveTo(star.x, star.y - star.glow * 0.38);
+        ctx.lineTo(star.x, star.y + star.glow * 0.38);
+        ctx.stroke();
+      }
+    }
+
+    function drawMoon(x, y, r) {
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 2.4);
+      glow.addColorStop(0, "rgba(255,255,255,0.16)");
+      glow.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 2.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      const grad = ctx.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.08, x, y, r);
+      grad.addColorStop(0, "rgba(230,234,240,0.96)");
+      grad.addColorStop(0.5, "rgba(179,186,198,0.92)");
+      grad.addColorStop(1, "rgba(84,92,107,0.98)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(82, 88, 102, 0.34)";
+      const craters = [
+        [-0.28, -0.12, 0.15],
+        [0.16, 0.05, 0.12],
+        [0.08, -0.33, 0.08],
+        [-0.04, 0.24, 0.09]
+      ];
+      for (const c of craters) {
+        ctx.beginPath();
+        ctx.arc(x + r * c[0], y + r * c[1], r * c[2], 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawPlanet(x, y, r, ring, palette) {
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 2.6);
+      glow.addColorStop(0, "rgba(255,255,255,0.11)");
+      glow.addColorStop(0.5, `${palette.outerGlow}`);
+      glow.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 2.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (ring) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-0.28);
+        ctx.strokeStyle = palette.ring;
+        ctx.lineWidth = r * 0.16;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r * 1.85, r * 0.52, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const grad = ctx.createRadialGradient(x - r * 0.28, y - r * 0.34, r * 0.09, x, y, r);
+      grad.addColorStop(0, palette.light);
+      grad.addColorStop(0.45, palette.mid);
+      grad.addColorStop(1, palette.dark);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = palette.band;
+      ctx.lineWidth = r * 0.08;
+      ctx.globalAlpha = 0.28;
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.arc(x, y + i * r * 0.18, r * 0.88, Math.PI * 0.14, Math.PI * 0.86);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawPlanets() {
+      for (const planet of planets) {
+        const px = planet.cx + Math.cos(time * planet.speed) * planet.orbitX;
+        const py = planet.cy + Math.sin(time * planet.speed * 0.8) * planet.orbitY;
+
+        if (planet.type === "moon") {
+          drawMoon(px, py, planet.radius);
+        } else if (planet.ring) {
+          drawPlanet(px, py, planet.radius, true, {
+            light: "rgba(236, 201, 146, 0.98)",
+            mid: "rgba(180, 125, 74, 0.95)",
+            dark: "rgba(70, 48, 40, 0.98)",
+            band: "rgba(255, 225, 188, 0.75)",
+            ring: "rgba(236, 218, 196, 0.5)",
+            outerGlow: "rgba(220, 171, 110, 0.1)"
+          });
+        } else {
+          drawPlanet(px, py, planet.radius, false, {
+            light: "rgba(165, 203, 255, 0.98)",
+            mid: "rgba(84, 132, 190, 0.95)",
+            dark: "rgba(32, 51, 95, 0.98)",
+            band: "rgba(198, 225, 255, 0.62)",
+            ring: "rgba(255,255,255,0)",
+            outerGlow: "rgba(110, 158, 255, 0.09)"
+          });
+        }
+      }
+    }
+
+    function spawnMeteor() {
+      if (Math.random() < 0.055) {
         meteors.push({
-            x: Math.random() * canvas.width,
-            y: -50,
-            vx: -speed * (0.6 + Math.random() * 0.4),
-            vy: speed,
-            len: (100 + Math.random() * 120) * scale,
-            weight: 1 * scale,
-            alpha: 1,
-            life: 0
+          x: rand(w * 0.25, w * 1.02),
+          y: rand(-80, h * 0.26),
+          vx: rand(-8.8, -4.6),
+          vy: rand(4.8, 7.6),
+          len: rand(100, 200),
+          alpha: 1,
+          life: 0,
+          width: rand(1.1, 2.4)
         });
+      }
     }
 
-    ctx.lineCap = "round";
+    function drawMeteors() {
+      spawnMeteor();
+      ctx.lineCap = "round";
 
-    for (let i = meteors.length - 1; i >= 0; i--) {
-        let m = meteors[i];
-
+      for (let i = meteors.length - 1; i >= 0; i--) {
+        const m = meteors[i];
         m.x += m.vx;
         m.y += m.vy;
-        m.life += 0.02;
+        m.life += 0.014;
         m.alpha = 1 - m.life;
 
         if (m.alpha <= 0) {
-            meteors.splice(i, 1);
-            continue;
+          meteors.splice(i, 1);
+          continue;
         }
 
-        let grad = ctx.createLinearGradient(
-            m.x, m.y,
-            m.x - m.vx * m.len * 0.1,
-            m.y - m.vy * m.len * 0.1
-        );
-
+        const tailX = m.x - m.vx * (m.len * 0.1);
+        const tailY = m.y - m.vy * (m.len * 0.1);
+        const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
         grad.addColorStop(0, `rgba(255,255,255,${m.alpha})`);
+        grad.addColorStop(0.32, `rgba(192,214,255,${m.alpha * 0.62})`);
         grad.addColorStop(1, "rgba(255,255,255,0)");
 
         ctx.beginPath();
         ctx.strokeStyle = grad;
-        ctx.lineWidth = m.weight;
+        ctx.lineWidth = m.width;
         ctx.moveTo(m.x, m.y);
-        ctx.lineTo(
-            m.x - m.vx * m.len * 0.1,
-            m.y - m.vy * m.len * 0.1
-        );
+        ctx.lineTo(tailX, tailY);
         ctx.stroke();
+      }
     }
-}
 
-function animate() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function renderLyrics(index) {
+      const current = lyrics[index];
+      if (!current) return;
+      lyricMain.style.opacity = "0";
+      lyricMain.style.transform = "translateY(10px)";
+      lyricMain.style.filter = "blur(4px)";
+      lyricSub.style.opacity = "0";
+      lyricSub.style.transform = "translateY(8px)";
+      setTimeout(() => {
+        lyricMain.textContent = current.main;
+        lyricSub.textContent = current.sub || "";
+        lyricMain.style.opacity = "1";
+        lyricMain.style.transform = "translateY(0)";
+        lyricMain.style.filter = "blur(0)";
+        lyricSub.style.opacity = current.sub ? "1" : "0";
+        lyricSub.style.transform = "translateY(0)";
+      }, 150);
+    }
 
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
+    function syncLyrics() {
+      const t = music.currentTime;
+      let next = lyricIndex;
+      for (let i = lyrics.length - 1; i >= 0; i--) {
+        if (t >= lyrics[i].time) {
+          next = i;
+          break;
+        }
+      }
 
-    backgroundStars.forEach(s => {
-        s.opacity += s.twinkle;
-        if (s.opacity > 1 || s.opacity < 0.1) s.twinkle *= -1;
-        ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
-        ctx.fillRect(s.x, s.y, s.size, s.size);
+      if (next !== lyricIndex) {
+        lyricIndex = next;
+        renderLyrics(lyricIndex);
+      }
+
+      lyricFrame = requestAnimationFrame(syncLyrics);
+    }
+
+    function animate() {
+      time += 1;
+      drawBackground();
+      drawBackgroundStars();
+      drawPlanets();
+      drawGalaxy();
+      drawBrightStars();
+      drawMeteors();
+      requestAnimationFrame(animate);
+    }
+
+    playButton.addEventListener("click", async () => {
+      try {
+        if (music.paused) {
+          await music.play();
+          playButton.textContent = "Pause Lagu";
+          renderLyrics(lyricIndex);
+          if (!lyricFrame) syncLyrics();
+        } else {
+          music.pause();
+          playButton.textContent = "Play Lagu";
+          if (lyricFrame) {
+            cancelAnimationFrame(lyricFrame);
+            lyricFrame = null;
+          }
+        }
+      } catch (error) {
+        console.error("Audio gagal diputar:", error);
+      }
     });
 
-    stars.forEach(s => {
-        s.angle += s.speed + 0.00005;
-        s.opacity += s.twinkle * 1.5;
-        if (s.opacity > 1 || s.opacity < 0.2) s.twinkle *= -1;
-
-        let perspective = 1 + (1 - s.dist / canvas.width) * 0.6;
-        let x = cx + Math.cos(s.angle) * s.dist * perspective;
-        let y = cy + Math.sin(s.angle) * s.dist * 0.3 * perspective;
-
-        ctx.beginPath();
-        ctx.arc(x, y, s.size * 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue}, 100%, 75%, ${s.opacity * 0.25})`;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(x, y, s.size * 0.7, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
-        ctx.fill();
+    nextLyricButton.addEventListener("click", () => {
+      lyricIndex = (lyricIndex + 1) % lyrics.length;
+      renderLyrics(lyricIndex);
     });
 
-    drawMeteor();
-    requestAnimationFrame(animate);
-}
+    music.addEventListener("ended", () => {
+      lyricIndex = 0;
+      renderLyrics(lyricIndex);
+    });
 
-resize();
-animate();
-
-/* ===== LYRICS SYNC ===== */
-const music = document.getElementById("music");
-const el = document.getElementById("text");
-
-const lyrics = [
-    { time: 0, text: "Say you want the moon 🌙" },
-    { time: 3, text: "Watch me learn to fly 🕊️" },
-    { time: 6, text: "Ain't no mountain you could point to" },
-    { time: 9, text: "I wouldn't climb" },
-    { time: 12, text: "It's crazy, but it's true" },
-    { time: 15, text: "There's nothing I won't do" },
-    { time: 18, text: "I'd risk it all for you ❤️" }
-];
-
-let currentIndex = 0;
-
-function syncLyrics() {
-    const t = music.currentTime;
-
-    if (currentIndex < lyrics.length - 1 && t >= lyrics[currentIndex + 1].time) {
-        currentIndex++;
-    }
-
-    el.innerHTML = lyrics[currentIndex].text;
-
-    if (currentIndex < lyrics.length - 1) {
-        requestAnimationFrame(syncLyrics);
-    }
-}
-
-/* START ON CLICK */
-window.addEventListener("click", () => {
-    music.play();
-    syncLyrics();
-}, { once: true });
-</script>
-
+    window.addEventListener("resize", resize);
+    resize();
+    animate();
+  </script>
 </body>
 </html>

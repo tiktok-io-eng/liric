@@ -9,11 +9,8 @@
       --text: #fff7fb;
       --muted: rgba(255, 240, 246, 0.84);
       --line: rgba(255, 255, 255, 0.14);
-      --panel: rgba(46, 14, 36, 0.44);
       --rose: #ff7aa8;
       --peach: #ffc8b8;
-      --gold: #ffe29b;
-      --sky: #9dd7ff;
     }
 
     * {
@@ -52,7 +49,7 @@
       position: fixed;
       top: 18px;
       right: 18px;
-      z-index: 5;
+      z-index: 7;
       appearance: none;
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 999px;
@@ -74,7 +71,7 @@
     .overlay {
       position: fixed;
       inset: 0;
-      z-index: 4;
+      z-index: 5;
       display: grid;
       place-items: center;
       padding: 24px;
@@ -91,12 +88,24 @@
       color: var(--text);
       box-shadow: 0 26px 70px rgba(0, 0, 0, 0.28);
       pointer-events: auto;
-      transition: opacity 260ms ease, transform 260ms ease;
     }
 
     .card.slim {
       width: min(660px, 100%);
       padding: 22px 24px;
+    }
+
+    .scene-two-note {
+      position: fixed;
+      inset: auto 24px 24px 24px;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .scene-two-note .card {
+      pointer-events: auto;
     }
 
     .hidden {
@@ -183,21 +192,9 @@
       background: linear-gradient(135deg, rgba(255, 123, 178, 1), rgba(255, 201, 170, 0.98));
     }
 
-    .scene-two-note {
-      position: fixed;
-      inset: auto 24px 24px 24px;
-      z-index: 4;
-      display: grid;
-      place-items: center;
-      pointer-events: none;
-    }
-
-    .scene-two-note .card {
-      pointer-events: auto;
-    }
-
     .album-shell {
       width: min(980px, 100%);
+      max-height: min(86vh, 760px);
       border-radius: 34px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background: rgba(16, 16, 34, 0.42);
@@ -205,6 +202,7 @@
       padding: 18px;
       box-shadow: 0 26px 70px rgba(0, 0, 0, 0.34);
       pointer-events: auto;
+      overflow: auto;
     }
 
     .album-book {
@@ -214,16 +212,65 @@
       min-height: min(68vh, 620px);
     }
 
-    .album-page,
+    .album-stage,
     .album-note {
       border-radius: 26px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      overflow: hidden;
       position: relative;
       background: rgba(255, 255, 255, 0.06);
+      overflow: hidden;
     }
 
-    .album-page::after {
+    .album-stage {
+      perspective: 1800px;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        rgba(255, 255, 255, 0.04);
+      min-height: min(68vh, 620px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    }
+
+    .album-page-shadow {
+      position: absolute;
+      inset: 24px 18px 24px 26px;
+      border-radius: 20px;
+      background: rgba(10, 8, 24, 0.26);
+      filter: blur(12px);
+      opacity: 0.58;
+      transform: translateX(8px);
+    }
+
+    .album-book-page {
+      position: absolute;
+      inset: 14px 14px 14px 20px;
+      border-radius: 22px;
+      transform-style: preserve-3d;
+      transform-origin: left center;
+      transition: transform 760ms cubic-bezier(0.22, 0.88, 0.24, 1);
+      box-shadow:
+        0 18px 35px rgba(0, 0, 0, 0.24),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .album-book-page.flipping-next {
+      transform: rotateY(-152deg);
+    }
+
+    .album-book-page.flipping-prev {
+      transform: rotateY(18deg);
+    }
+
+    .album-book-page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.08));
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .album-book-page::after {
       content: "";
       position: absolute;
       top: 0;
@@ -295,8 +342,8 @@
         grid-template-columns: 1fr;
       }
 
-      .album-page {
-        min-height: 42vh;
+      .album-stage {
+        min-height: 40vh;
       }
     }
 
@@ -310,6 +357,23 @@
       .album-shell {
         padding: 20px;
         border-radius: 24px;
+      }
+
+      .album-shell {
+        max-height: calc(100vh - 72px);
+      }
+
+      .album-note {
+        padding: 20px;
+      }
+
+      .album-note h2 {
+        font-size: clamp(1.45rem, 7vw, 2.1rem);
+      }
+
+      .album-note p {
+        font-size: 0.95rem;
+        line-height: 1.6;
       }
 
       .choices,
@@ -328,13 +392,20 @@
         top: 14px;
         right: 14px;
       }
+
+      .album-nav {
+        position: sticky;
+        bottom: 0;
+        padding-top: 12px;
+        background: linear-gradient(180deg, rgba(22, 18, 39, 0), rgba(22, 18, 39, 0.96) 34%);
+      }
     }
   </style>
 </head>
 <body>
   <canvas id="scene"></canvas>
 
-  <button id="playButton" class="audio-button" type="button">Play Music</button>
+  <button id="playButton" class="audio-button" type="button">Play Lagu</button>
 
   <div class="overlay" id="sceneOneOverlay">
     <div class="card slim">
@@ -355,8 +426,8 @@
   <div class="scene-two-note hidden" id="sceneTwoOverlay">
     <div class="card slim">
       <span class="eyebrow">Taman Mawar</span>
-      <h2 class="title" id="sceneTwoTitle" style="font-size: clamp(1.85rem, 4vw, 3.2rem);">Haiii Tiwi, ini taman bunga buat kamu ❤</h2>
-      <p class="message" id="sceneTwoMessage">Semoga kamu sukaa yaa. Aku bikinin taman mawar kecil yang mekar pelan buat nemenin suasanamu.</p>
+      <h2 class="title" id="sceneTwoTitle" style="font-size: clamp(1.85rem, 4vw, 3.2rem);">Haiii Tiwi, ini taman bunga buat kamu &#10084;</h2>
+      <p class="message" id="sceneTwoMessage">Semoga kamu sukaa. Aku bikinin taman mawar kecil yang mekar pelan buat nemenin suasanamu.</p>
       <div class="choices" id="sceneTwoChoices">
         <button class="choice" data-value="like" type="button">Suka</button>
         <button class="choice" data-value="dislike" type="button">Tidak suka</button>
@@ -370,8 +441,11 @@
   <div class="overlay hidden" id="sceneThreeOverlay">
     <div class="album-shell">
       <div class="album-book">
-        <div class="album-page">
-          <img id="albumImage" class="album-image" src="1.jpeg" alt="Album Tiwi">
+        <div class="album-stage" id="albumStage">
+          <div class="album-page-shadow"></div>
+          <div id="albumPage" class="album-book-page">
+            <img id="albumImage" class="album-image" src="1.jpeg" alt="Album Tiwi">
+          </div>
         </div>
         <div class="album-note">
           <div>
@@ -379,7 +453,7 @@
             <h2 id="albumTitle">Halaman kenangan buat Tiwi</h2>
             <p id="albumText">Geser pelan yaa.</p>
             <div class="album-counter" id="albumCounter">Foto 1 dari 7</div>
-            <div class="album-love" id="albumLove">Love you Tiwi ❤❤</div>
+            <div class="album-love" id="albumLove">Love you Tiwi &#10084;&#10084;</div>
           </div>
           <div class="album-nav">
             <button id="prevPhoto" class="album-button" type="button">Geser Sebelumnya</button>
@@ -411,6 +485,8 @@
     const sceneTwoNext = document.getElementById("sceneTwoNext");
 
     const sceneThreeOverlay = document.getElementById("sceneThreeOverlay");
+    const albumStage = document.getElementById("albumStage");
+    const albumPage = document.getElementById("albumPage");
     const albumImage = document.getElementById("albumImage");
     const albumTitle = document.getElementById("albumTitle");
     const albumText = document.getElementById("albumText");
@@ -427,6 +503,10 @@
     let sceneTwoStartedAt = 0;
     let sceneTwoPromptShown = false;
     let albumIndex = 0;
+    let albumFlipTimer = null;
+    let isAlbumFlipping = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
 
     let introLights = [];
     let sparkles = [];
@@ -460,10 +540,6 @@
 
     function rand(min, max) {
       return Math.random() * (max - min) + min;
-    }
-
-    function lerp(a, b, t) {
-      return a + (b - a) * t;
     }
 
     function resize() {
@@ -576,7 +652,7 @@
         });
       }
 
-      for (let i = 0; i < Math.max(110, Math.floor((w * h) / 7000)); i++) {
+      for (let i = 0; i < Math.max(120, Math.floor((w * h) / 6800)); i++) {
         stars.push({
           x: rand(0, w),
           y: rand(0, h),
@@ -585,21 +661,22 @@
           alpha: rand(0.18, 0.66),
           speed: rand(0.01, 0.045),
           phase: rand(0, Math.PI * 2),
-          hue: rand(195, 240)
+          hue: rand(195, 240),
+          drift: rand(-0.06, 0.06)
         });
       }
 
-      for (let i = 0; i < Math.max(180, Math.floor((w * h) / 1700)); i++) {
-        const dist = Math.pow(Math.random(), 1.6) * Math.min(w, h) * 0.45;
+      for (let i = 0; i < Math.max(230, Math.floor((w * h) / 1350)); i++) {
+        const dist = Math.pow(Math.random(), 1.55) * Math.min(w, h) * 0.46;
         galaxyDust.push({
           dist,
           angle: (i % 4) * (Math.PI / 2) + dist * 0.032 + rand(-0.4, 0.4),
-          size: rand(0.6, 2.1),
-          alpha: rand(0.06, 0.28),
+          size: rand(0.6, 2.2),
+          alpha: rand(0.08, 0.36),
           hue: [210, 226, 296, 20, 334][i % 5],
-          drift: rand(0.00003, 0.00008),
+          drift: rand(0.00004, 0.00012),
           squash: rand(0.28, 0.42),
-          depth: rand(0.88, 1.14)
+          depth: rand(0.88, 1.18)
         });
       }
 
@@ -636,7 +713,7 @@
             dark: "rgba(92, 52, 68, 0.98)",
             band: "rgba(255, 228, 214, 0.58)",
             ring: "rgba(255, 220, 210, 0.56)",
-            glow: "rgba(255, 171, 153, 0.14)"
+            glow: "rgba(255, 171, 153, 0.16)"
           }
         },
         {
@@ -655,7 +732,7 @@
             dark: "rgba(35, 61, 111, 0.98)",
             band: "rgba(219, 236, 255, 0.5)",
             ring: "rgba(255,255,255,0)",
-            glow: "rgba(128, 171, 255, 0.13)"
+            glow: "rgba(128, 171, 255, 0.15)"
           }
         }
       ];
@@ -725,10 +802,10 @@
     function drawRoseBloom(cx, cy, bloom, hue) {
       const layers = 6;
       for (let layer = 0; layer < layers; layer++) {
-        const petals = 5 + layer;
+        const petalsCount = 5 + layer;
         const radius = bloom * (0.16 + layer * 0.12);
-        for (let i = 0; i < petals; i++) {
-          const angle = (Math.PI * 2 * i) / petals + layer * 0.3 + Math.sin(time * 0.004 + layer) * 0.08;
+        for (let i = 0; i < petalsCount; i++) {
+          const angle = (Math.PI * 2 * i) / petalsCount + layer * 0.3 + Math.sin(time * 0.004 + layer) * 0.08;
           const px = cx + Math.cos(angle) * radius;
           const py = cy + Math.sin(angle) * radius * 0.78;
           ctx.fillStyle = `hsla(${hue + layer * 2}, 88%, ${72 - layer * 3}%, ${0.94 - layer * 0.05})`;
@@ -829,7 +906,7 @@
           const angle = time * butterfly.speed + butterfly.phase;
           const flyX = centerX + Math.cos(angle) * butterfly.radius * butterflyProgress;
           const flyY = centerY - 18 + Math.sin(angle * 1.5) * butterfly.radius * 0.35 * butterflyProgress;
-          const flap = Math.sin(time * 0.35 + index) * butterfly.wing;
+          const flap = Math.max(4, Math.abs(Math.sin(time * 0.35 + index)) * butterfly.wing);
 
           drawGlow(flyX, flyY, butterfly.wing * 2.8, `hsla(${butterfly.hue}, 100%, 78%, 0.12)`);
           ctx.save();
@@ -837,8 +914,8 @@
           ctx.rotate(Math.sin(angle) * 0.25);
           ctx.fillStyle = `hsla(${butterfly.hue}, 100%, 76%, 0.9)`;
           ctx.beginPath();
-          ctx.ellipse(-butterfly.wing * 0.38, 0, butterfly.wing, Math.max(4, flap), -0.5, 0, Math.PI * 2);
-          ctx.ellipse(butterfly.wing * 0.38, 0, butterfly.wing, Math.max(4, flap), 0.5, 0, Math.PI * 2);
+          ctx.ellipse(-butterfly.wing * 0.38, 0, butterfly.wing, flap, -0.5, 0, Math.PI * 2);
+          ctx.ellipse(butterfly.wing * 0.38, 0, butterfly.wing, flap, 0.5, 0, Math.PI * 2);
           ctx.fill();
           ctx.strokeStyle = "rgba(72, 44, 42, 0.8)";
           ctx.lineWidth = 1.2;
@@ -864,19 +941,21 @@
       for (const star of stars) {
         const pulse = (Math.sin(time * star.speed + star.phase) + 1) * 0.5;
         const alpha = star.alpha + pulse * 0.34;
-        drawGlow(star.x, star.y, star.glow, `hsla(${star.hue}, 100%, 84%, ${alpha * 0.18})`);
+        const x = star.x + Math.sin(time * 0.003 + star.phase) * star.drift * 12;
+        const y = star.y + Math.cos(time * 0.0026 + star.phase) * star.drift * 8;
+        drawGlow(x, y, star.glow + pulse * 2.4, `hsla(${star.hue}, 100%, 84%, ${alpha * 0.22})`);
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+        ctx.arc(x, y, star.r + pulse * 0.18, 0, Math.PI * 2);
         ctx.fill();
         if (star.r > 1.05 && alpha > 0.46) {
           ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.52})`;
           ctx.lineWidth = 0.8;
           ctx.beginPath();
-          ctx.moveTo(star.x - star.glow * 0.28, star.y);
-          ctx.lineTo(star.x + star.glow * 0.28, star.y);
-          ctx.moveTo(star.x, star.y - star.glow * 0.28);
-          ctx.lineTo(star.x, star.y + star.glow * 0.28);
+          ctx.moveTo(x - star.glow * 0.28, y);
+          ctx.lineTo(x + star.glow * 0.28, y);
+          ctx.moveTo(x, y - star.glow * 0.28);
+          ctx.lineTo(x, y + star.glow * 0.28);
           ctx.stroke();
         }
       }
@@ -888,28 +967,32 @@
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(-0.34 + Math.sin(time * 0.00005) * 0.03);
+
       for (const dust of galaxyDust) {
         dust.angle += dust.drift;
-        const angle = dust.angle + time * 0.00028;
+        const angle = dust.angle + time * 0.00034;
         const x = Math.cos(angle) * dust.dist * dust.depth;
         const y = Math.sin(angle) * dust.dist * dust.squash * dust.depth;
-        ctx.fillStyle = `hsla(${dust.hue}, 100%, 78%, ${dust.alpha * 0.26})`;
+
+        ctx.fillStyle = `hsla(${dust.hue}, 100%, 78%, ${dust.alpha * 0.32})`;
         ctx.beginPath();
-        ctx.arc(x, y, dust.size * 1.8, 0, Math.PI * 2);
+        ctx.arc(x, y, dust.size * 1.9, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = `hsla(${dust.hue}, 100%, 82%, ${dust.alpha * 0.1})`;
+
+        ctx.fillStyle = `hsla(${dust.hue}, 100%, 82%, ${dust.alpha * 0.14})`;
         ctx.beginPath();
-        ctx.arc(x, y, dust.size * 4.8, 0, Math.PI * 2);
+        ctx.arc(x, y, dust.size * 5.8, 0, Math.PI * 2);
         ctx.fill();
       }
-      const core = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.min(w, h) * 0.15);
+
+      const core = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.min(w, h) * 0.17);
       core.addColorStop(0, "rgba(255, 246, 222, 0.98)");
-      core.addColorStop(0.15, "rgba(255, 224, 188, 0.78)");
-      core.addColorStop(0.45, "rgba(255, 166, 116, 0.22)");
+      core.addColorStop(0.15, "rgba(255, 224, 188, 0.82)");
+      core.addColorStop(0.45, "rgba(255, 166, 116, 0.26)");
       core.addColorStop(1, "rgba(255, 166, 116, 0)");
       ctx.fillStyle = core;
       ctx.beginPath();
-      ctx.arc(0, 0, Math.min(w, h) * 0.15, 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.min(w, h) * 0.17, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
@@ -983,6 +1066,9 @@
         drawGlow(haze.x, haze.y, haze.r, haze.color);
       }
 
+      drawGlow(w * 0.5, h * 0.5, Math.min(w, h) * 0.38, "rgba(138, 113, 255, 0.08)");
+      drawGlow(w * 0.5, h * 0.5, Math.min(w, h) * 0.22, "rgba(255, 183, 142, 0.05)");
+
       drawStars();
       drawGalaxyDust();
 
@@ -1000,13 +1086,13 @@
     function setScene(scene) {
       currentScene = scene;
       sceneOneOverlay.classList.toggle("hidden", scene !== 1);
-      sceneTwoOverlay.classList.toggle("hidden", true);
+      sceneTwoOverlay.classList.add("hidden");
       sceneThreeOverlay.classList.toggle("hidden", scene !== 3);
 
       if (scene === 2) {
         sceneTwoStartedAt = time;
         sceneTwoPromptShown = false;
-        sceneTwoMessage.textContent = "Semoga kamu sukaa ya hehehe.";
+        sceneTwoMessage.textContent = "Semoga kamu sukaa. Aku bikinin taman mawar kecil yang mekar pelan buat nemenin suasanamu.";
         sceneTwoChoices.classList.remove("hidden");
         sceneTwoNextWrap.classList.add("hidden");
       }
@@ -1025,6 +1111,29 @@
       albumTitle.textContent = albumIndex === photos.length - 1 ? "Halaman terakhir buat Tiwi" : "Halaman kenangan buat Tiwi";
       albumLove.classList.toggle("show", albumIndex === photos.length - 1);
       nextPhoto.textContent = albumIndex === photos.length - 1 ? "Balik ke Awal Album" : "Geser Selanjutnya";
+    }
+
+    function flipAlbum(direction) {
+      if (isAlbumFlipping) return;
+      isAlbumFlipping = true;
+      albumPage.classList.remove("flipping-next", "flipping-prev");
+      void albumPage.offsetWidth;
+      albumPage.classList.add(direction === "next" ? "flipping-next" : "flipping-prev");
+
+      clearTimeout(albumFlipTimer);
+      albumFlipTimer = setTimeout(() => {
+        if (direction === "next") {
+          albumIndex = (albumIndex + 1) % photos.length;
+        } else {
+          albumIndex = (albumIndex - 1 + photos.length) % photos.length;
+        }
+        updateAlbum();
+      }, 330);
+
+      setTimeout(() => {
+        albumPage.classList.remove("flipping-next", "flipping-prev");
+        isAlbumFlipping = false;
+      }, 780);
     }
 
     function animate() {
@@ -1069,14 +1178,27 @@
     });
 
     prevPhoto.addEventListener("click", () => {
-      albumIndex = (albumIndex - 1 + photos.length) % photos.length;
-      updateAlbum();
+      flipAlbum("prev");
     });
 
     nextPhoto.addEventListener("click", () => {
-      albumIndex = (albumIndex + 1) % photos.length;
-      updateAlbum();
+      flipAlbum("next");
     });
+
+    albumStage.addEventListener("touchstart", (event) => {
+      const touch = event.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    }, { passive: true });
+
+    albumStage.addEventListener("touchend", (event) => {
+      const touch = event.changedTouches[0];
+      const diffX = touch.clientX - touchStartX;
+      const diffY = touch.clientY - touchStartY;
+      if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+        flipAlbum(diffX < 0 ? "next" : "prev");
+      }
+    }, { passive: true });
 
     playButton.addEventListener("click", async () => {
       try {

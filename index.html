@@ -515,6 +515,7 @@
     let butterflies = [];
     let fireflies = [];
     let petals = [];
+    let grassBlades = [];
     let stars = [];
     let hazes = [];
     let galaxyDust = [];
@@ -562,6 +563,7 @@
       butterflies = [];
       fireflies = [];
       petals = [];
+      grassBlades = [];
       stars = [];
       hazes = [];
       galaxyDust = [];
@@ -604,38 +606,51 @@
         });
       }
 
-      const roseCount = Math.max(7, Math.min(14, Math.floor(w / 110)));
+      const roseCount = Math.max(12, Math.min(24, Math.floor(w / 72)));
       for (let i = 0; i < roseCount; i++) {
         roses.push({
           x: ((i + 0.5) / roseCount) * w + rand(-22, 22),
-          stemHeight: rand(h * 0.22, h * 0.42),
-          sway: rand(7, 18),
+          stemHeight: rand(h * 0.18, h * 0.4),
+          sway: rand(5, 14),
           phase: rand(0, Math.PI * 2),
           bloomDelay: rand(0, 1.6),
-          bloomScale: rand(18, 34),
+          bloomScale: rand(16, 31),
           hue: [346, 352, 338, 0, 14][i % 5],
-          leafTilt: rand(10, 24)
+          leafTilt: rand(10, 24),
+          lean: rand(-8, 8)
         });
       }
 
-      for (let i = 0; i < 9; i++) {
+      for (let i = 0; i < Math.max(16, Math.floor(w / 70)); i++) {
         butterflies.push({
           orbitIndex: i % Math.max(1, roses.length),
-          radius: rand(42, 92),
+          radius: rand(36, 92),
           speed: rand(0.01, 0.024),
           phase: rand(0, Math.PI * 2),
-          wing: rand(8, 14),
+          wing: rand(7, 14),
           hue: [28, 48, 332, 210][i % 4]
         });
       }
 
-      for (let i = 0; i < 26; i++) {
+      for (let i = 0; i < 42; i++) {
         fireflies.push({
           x: rand(0, w),
-          y: rand(h * 0.22, h * 0.92),
+          y: rand(h * 0.18, h * 0.94),
           r: rand(2, 4.2),
           speed: rand(0.014, 0.035),
-          phase: rand(0, Math.PI * 2)
+          phase: rand(0, Math.PI * 2),
+          drift: rand(8, 24)
+        });
+      }
+
+      for (let i = 0; i < Math.max(180, Math.floor(w / 4)); i++) {
+        grassBlades.push({
+          x: rand(-10, w + 10),
+          height: rand(h * 0.03, h * 0.09),
+          bend: rand(4, 18),
+          width: rand(1.2, 2.4),
+          phase: rand(0, Math.PI * 2),
+          hue: rand(96, 132)
         });
       }
 
@@ -799,24 +814,45 @@
       }
     }
 
-    function drawRoseBloom(cx, cy, bloom, hue) {
-      const layers = 6;
+    function drawRoseBloom(cx, cy, bloom, hue, open) {
+      const budTight = 1 - open;
+      const layers = 7;
+      drawGlow(cx, cy, bloom * (1.2 + open * 1.8), `hsla(${hue}, 100%, 76%, ${0.12 + open * 0.14})`);
       for (let layer = 0; layer < layers; layer++) {
         const petalsCount = 5 + layer;
-        const radius = bloom * (0.16 + layer * 0.12);
+        const radius = bloom * (0.08 + layer * 0.085) * (0.42 + open * 0.72);
         for (let i = 0; i < petalsCount; i++) {
-          const angle = (Math.PI * 2 * i) / petalsCount + layer * 0.3 + Math.sin(time * 0.004 + layer) * 0.08;
+          const angle = (Math.PI * 2 * i) / petalsCount + layer * 0.28 + Math.sin(time * 0.004 + layer) * 0.05;
           const px = cx + Math.cos(angle) * radius;
-          const py = cy + Math.sin(angle) * radius * 0.78;
-          ctx.fillStyle = `hsla(${hue + layer * 2}, 88%, ${72 - layer * 3}%, ${0.94 - layer * 0.05})`;
+          const py = cy + Math.sin(angle) * radius * (0.42 + open * 0.46) - budTight * bloom * 0.18;
+          const petalW = bloom * (0.12 + layer * 0.016) * (0.8 + open * 0.6);
+          const petalH = bloom * (0.18 + layer * 0.014) * (0.36 + open * 0.74);
+          ctx.fillStyle = `hsla(${hue + layer * 2}, 88%, ${74 - layer * 3}%, ${0.96 - layer * 0.05})`;
           ctx.beginPath();
-          ctx.ellipse(px, py, bloom * (0.16 + layer * 0.02), bloom * (0.1 + layer * 0.015), angle, 0, Math.PI * 2);
+          ctx.ellipse(px, py, petalW, petalH, angle + budTight * 0.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
+
+      ctx.fillStyle = `rgba(108, 170, 84, ${0.2 + budTight * 0.25})`;
+      for (let i = 0; i < 4; i++) {
+        const a = (-0.9 + i * 0.6) + Math.sin(time * 0.006 + i) * 0.02;
+        ctx.beginPath();
+        ctx.ellipse(
+          cx + Math.cos(a) * bloom * 0.18,
+          cy + bloom * 0.14 + Math.sin(a) * bloom * 0.06,
+          bloom * 0.11,
+          bloom * 0.2,
+          a,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+      }
+
       ctx.fillStyle = "rgba(255, 219, 120, 0.92)";
       ctx.beginPath();
-      ctx.arc(cx, cy, bloom * 0.12, 0, Math.PI * 2);
+      ctx.arc(cx, cy + bloom * 0.04, bloom * (0.06 + open * 0.07), 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -841,6 +877,21 @@
       ctx.closePath();
       ctx.fill();
 
+      for (const blade of grassBlades) {
+        const sway = Math.sin(time * 0.02 + blade.phase) * blade.bend;
+        ctx.strokeStyle = `hsla(${blade.hue}, 52%, 42%, 0.88)`;
+        ctx.lineWidth = blade.width;
+        ctx.beginPath();
+        ctx.moveTo(blade.x, h * 0.94);
+        ctx.quadraticCurveTo(
+          blade.x + sway * 0.35,
+          h * 0.94 - blade.height * 0.55,
+          blade.x + sway,
+          h * 0.94 - blade.height
+        );
+        ctx.stroke();
+      }
+
       ctx.lineCap = "round";
 
       const sceneTwoTime = Math.max(0, (time - sceneTwoStartedAt) / 60);
@@ -851,15 +902,16 @@
         const sway = Math.sin(time * 0.01 + rose.phase) * rose.sway;
         const baseY = h * 0.92;
         const heightGrow = rose.stemHeight * Math.min(1, bloomProgress * 1.2);
-        const bloomX = rose.x + sway;
+        const bloomX = rose.x + sway + rose.lean * 0.3;
         const bloomY = baseY - heightGrow;
-        const bloomSize = rose.bloomScale * Math.max(0.08, Math.min(1, bloomProgress * 1.35 - rose.bloomDelay * 0.16));
+        const bloomOpen = Math.max(0.02, Math.min(1, bloomProgress * 1.4 - rose.bloomDelay * 0.16));
+        const bloomSize = rose.bloomScale * (0.18 + bloomOpen * 0.82);
 
         ctx.strokeStyle = "rgba(116, 208, 123, 0.92)";
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3.5;
         ctx.beginPath();
         ctx.moveTo(rose.x, baseY);
-        ctx.quadraticCurveTo(rose.x + sway * 0.4, baseY - heightGrow * 0.45, bloomX, bloomY);
+        ctx.quadraticCurveTo(rose.x + rose.lean, baseY - heightGrow * 0.32, bloomX, bloomY);
         ctx.stroke();
 
         ctx.strokeStyle = "rgba(89, 184, 108, 0.78)";
@@ -873,8 +925,12 @@
         ctx.quadraticCurveTo(rose.x + rose.leafTilt, baseY - heightGrow * 0.7, rose.x + 8, baseY - heightGrow * 0.44);
         ctx.stroke();
 
-        drawGlow(bloomX, bloomY, bloomSize * 2.2, `hsla(${rose.hue}, 100%, 76%, 0.22)`);
-        drawRoseBloom(bloomX, bloomY, bloomSize, rose.hue);
+        ctx.fillStyle = "rgba(104, 168, 82, 0.92)";
+        ctx.beginPath();
+        ctx.ellipse(bloomX, bloomY + bloomSize * 0.16, bloomSize * 0.16, bloomSize * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawRoseBloom(bloomX, bloomY, bloomSize, rose.hue, bloomOpen);
       }
 
       for (const petal of petals) {
@@ -901,14 +957,14 @@
         butterflies.forEach((butterfly, index) => {
           const rose = roses[butterfly.orbitIndex];
           const sway = Math.sin(time * 0.01 + rose.phase) * rose.sway;
-          const centerX = rose.x + sway;
+          const centerX = rose.x + sway + rose.lean * 0.3;
           const centerY = h * 0.92 - rose.stemHeight * Math.min(1, bloomProgress * 1.2);
           const angle = time * butterfly.speed + butterfly.phase;
           const flyX = centerX + Math.cos(angle) * butterfly.radius * butterflyProgress;
-          const flyY = centerY - 18 + Math.sin(angle * 1.5) * butterfly.radius * 0.35 * butterflyProgress;
+          const flyY = centerY - 12 + Math.sin(angle * 1.6) * butterfly.radius * 0.34 * butterflyProgress;
           const flap = Math.max(4, Math.abs(Math.sin(time * 0.35 + index)) * butterfly.wing);
 
-          drawGlow(flyX, flyY, butterfly.wing * 2.8, `hsla(${butterfly.hue}, 100%, 78%, 0.12)`);
+          drawGlow(flyX, flyY, butterfly.wing * 3.2, `hsla(${butterfly.hue}, 100%, 78%, 0.16)`);
           ctx.save();
           ctx.translate(flyX, flyY);
           ctx.rotate(Math.sin(angle) * 0.25);
@@ -929,10 +985,12 @@
 
       for (const fly of fireflies) {
         const pulse = (Math.sin(time * fly.speed + fly.phase) + 1) * 0.5;
-        drawGlow(fly.x, fly.y, fly.r * 6, `rgba(255, 231, 152, ${0.16 + pulse * 0.22})`);
-        ctx.fillStyle = `rgba(255, 239, 182, ${0.26 + pulse * 0.48})`;
+        const fx = fly.x + Math.sin(time * 0.01 + fly.phase) * fly.drift;
+        const fy = fly.y + Math.cos(time * 0.012 + fly.phase) * (fly.drift * 0.45);
+        drawGlow(fx, fy, fly.r * (7 + pulse * 2), `rgba(255, 231, 152, ${0.18 + pulse * 0.3})`);
+        ctx.fillStyle = `rgba(255, 239, 182, ${0.34 + pulse * 0.56})`;
         ctx.beginPath();
-        ctx.arc(fly.x, fly.y, fly.r, 0, Math.PI * 2);
+        ctx.arc(fx, fy, fly.r + pulse * 0.45, 0, Math.PI * 2);
         ctx.fill();
       }
     }

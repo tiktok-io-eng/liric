@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Galaxy Dreamscape</title>
+  <title>Tiwi Sweet Universe</title>
   <style>
     :root {
-      --text: rgba(247, 243, 255, 0.96);
-      --muted: rgba(224, 218, 245, 0.78);
-      --panel: rgba(5, 8, 20, 0.22);
-      --line: rgba(255, 255, 255, 0.12);
+      --text: #fff7fb;
+      --muted: rgba(255, 240, 246, 0.84);
+      --line: rgba(255, 255, 255, 0.14);
+      --panel: rgba(46, 14, 36, 0.44);
+      --rose: #ff7aa8;
+      --peach: #ffc8b8;
+      --gold: #ffe29b;
+      --sky: #9dd7ff;
     }
 
     * {
@@ -21,141 +25,308 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #02040d;
-      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #120611;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255, 163, 194, 0.18), transparent 34%),
+        radial-gradient(circle at 82% 12%, rgba(215, 172, 255, 0.14), transparent 28%),
+        radial-gradient(circle at 50% 84%, rgba(255, 223, 183, 0.12), transparent 32%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     canvas {
       position: fixed;
       inset: 0;
       display: block;
+      z-index: 1;
+    }
+
+    .audio-button {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 5;
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(30, 10, 26, 0.46);
+      backdrop-filter: blur(16px);
+      color: #fff7fb;
+      padding: 12px 18px;
+      font: inherit;
+      cursor: pointer;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
+      transition: transform 180ms ease, background 180ms ease;
+    }
+
+    .audio-button:hover {
+      transform: translateY(-1px);
+      background: rgba(42, 14, 34, 0.66);
     }
 
     .overlay {
       position: fixed;
       inset: 0;
+      z-index: 4;
       display: grid;
       place-items: center;
       padding: 24px;
       pointer-events: none;
-      z-index: 4;
     }
 
-    .lyrics-wrap {
-      width: min(860px, 100%);
-      text-align: center;
-      transform: translateY(18vh);
-      text-shadow:
-        0 0 16px rgba(22, 16, 50, 0.85),
-        0 0 40px rgba(0, 0, 0, 0.8),
-        0 0 70px rgba(72, 113, 236, 0.16);
-    }
-
-    .lyric-main {
-      min-height: 2.6em;
+    .card {
+      width: min(760px, 100%);
+      padding: 28px;
+      border-radius: 32px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(69, 23, 56, 0.7), rgba(27, 10, 24, 0.54));
+      backdrop-filter: blur(18px);
       color: var(--text);
-      font-size: clamp(1.2rem, 3vw, 2.15rem);
-      font-weight: 700;
-      line-height: 1.35;
-      letter-spacing: 0.02em;
-      transition: opacity 420ms ease, transform 420ms ease, filter 420ms ease;
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.28);
+      pointer-events: auto;
+      transition: opacity 260ms ease, transform 260ms ease;
     }
 
-    .lyric-sub {
-      min-height: 1.8em;
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: clamp(0.92rem, 1.8vw, 1.14rem);
-      font-weight: 500;
-      line-height: 1.5;
-      transition: opacity 420ms ease, transform 420ms ease;
+    .card.slim {
+      width: min(660px, 100%);
+      padding: 22px 24px;
     }
 
-    .hint {
-      position: fixed;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 8;
-      padding: 9px 14px;
+    .hidden {
+      display: none !important;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 7px 12px;
       border-radius: 999px;
-      background: rgba(7, 10, 24, 0.38);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: rgba(241, 236, 255, 0.9);
-      backdrop-filter: blur(10px);
-      font-size: 0.83rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 235, 244, 0.86);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, p {
+      margin: 0;
+    }
+
+    .title {
+      margin-top: 16px;
+      font-size: clamp(2.05rem, 5vw, 4rem);
+      line-height: 1.04;
+    }
+
+    .message {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.14rem);
+      line-height: 1.7;
+      min-height: 3.4em;
+    }
+
+    .choices,
+    .bottom-action,
+    .album-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .bottom-action {
+      justify-content: center;
+    }
+
+    .choice,
+    .next-button,
+    .album-button {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      color: white;
+      padding: 11px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .choice,
+    .album-button {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .next-button {
+      background: linear-gradient(135deg, rgba(255, 123, 178, 0.96), rgba(255, 201, 170, 0.94));
+      color: #3b1127;
+      border-color: rgba(255, 221, 229, 0.58);
+      font-weight: 700;
+      min-width: 180px;
+    }
+
+    .choice:hover,
+    .next-button:hover,
+    .album-button:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .next-button:hover {
+      background: linear-gradient(135deg, rgba(255, 123, 178, 1), rgba(255, 201, 170, 0.98));
+    }
+
+    .scene-two-note {
+      position: fixed;
+      inset: auto 24px 24px 24px;
+      z-index: 4;
+      display: grid;
+      place-items: center;
       pointer-events: none;
     }
 
-    .panel {
-      position: fixed;
-      left: 18px;
-      right: 18px;
-      bottom: 18px;
-      z-index: 8;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
-    }
-
-    .panel-info {
-      color: rgba(236, 231, 248, 0.88);
-      font-size: 0.88rem;
-      line-height: 1.55;
-    }
-
-    .panel-info strong {
-      display: block;
-      margin-bottom: 3px;
-      color: white;
-      font-size: 0.94rem;
-    }
-
-    .controls {
-      display: flex;
-      gap: 10px;
+    .scene-two-note .card {
       pointer-events: auto;
     }
 
-    button {
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.07);
-      color: white;
-      padding: 10px 16px;
+    .album-shell {
+      width: min(980px, 100%);
+      border-radius: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(16, 16, 34, 0.42);
+      backdrop-filter: blur(18px);
+      padding: 18px;
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.34);
+      pointer-events: auto;
+    }
+
+    .album-book {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      min-height: min(68vh, 620px);
+    }
+
+    .album-page,
+    .album-note {
+      border-radius: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      position: relative;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .album-page::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: -9px;
+      width: 18px;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.08));
+      opacity: 0.48;
+    }
+
+    .album-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.04) contrast(1.02);
+    }
+
+    .album-note {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        linear-gradient(180deg, rgba(53, 27, 70, 0.82), rgba(20, 20, 41, 0.72)),
+        rgba(255, 255, 255, 0.06);
+    }
+
+    .album-note h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.08;
+    }
+
+    .album-note p {
+      margin-top: 14px;
+      color: rgba(238, 232, 255, 0.82);
+      line-height: 1.7;
+      font-size: clamp(0.98rem, 2vw, 1.08rem);
+    }
+
+    .album-counter {
+      margin-top: 18px;
+      display: inline-flex;
+      align-self: flex-start;
+      padding: 8px 12px;
       border-radius: 999px;
-      cursor: pointer;
-      font: inherit;
-      transition: transform 180ms ease, background 180ms ease;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 241, 247, 0.88);
+      font-size: 0.84rem;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      background: rgba(255, 255, 255, 0.12);
+    .album-love {
+      margin-top: 12px;
+      color: rgba(255, 234, 243, 0.96);
+      font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 280ms ease, transform 280ms ease;
     }
 
-    @media (max-width: 760px) {
-      .lyrics-wrap {
-        transform: translateY(12vh);
+    .album-love.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 880px) {
+      .album-book {
+        grid-template-columns: 1fr;
       }
 
-      .panel {
-        flex-direction: column;
-        align-items: stretch;
+      .album-page {
+        min-height: 42vh;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .overlay,
+      .scene-two-note {
+        padding: 16px;
       }
 
-      .controls {
+      .card,
+      .album-shell {
+        padding: 20px;
+        border-radius: 24px;
+      }
+
+      .choices,
+      .bottom-action,
+      .album-nav {
         width: 100%;
       }
 
-      button {
-        width: 100%;
+      .choice,
+      .next-button,
+      .album-button {
+        flex: 1 1 100%;
+      }
+
+      .audio-button {
+        top: 14px;
+        right: 14px;
       }
     }
   </style>
@@ -163,23 +334,59 @@
 <body>
   <canvas id="scene"></canvas>
 
-  <div class="hint">Klik play untuk mulai lagu, lirik, dan suasana galaxy</div>
+  <button id="playButton" class="audio-button" type="button">Play Music</button>
 
-  <div class="overlay">
-    <div class="lyrics-wrap">
-      <div id="lyricMain" class="lyric-main">Tekan play untuk mulai lagu.</div>
-      <div id="lyricSub" class="lyric-sub"></div>
+  <div class="overlay" id="sceneOneOverlay">
+    <div class="card slim">
+      <span class="eyebrow">Sweet Intro</span>
+      <h1 class="title">Haiii Tiwii, gimana hari ini, apakah menyenangkan?</h1>
+      <p class="message" id="sceneOneMessage">Pilih dulu salah satu yaa, nanti aku lanjutkan suasana manisnya buat kamu.</p>
+      <div class="choices" id="sceneOneChoices">
+        <button class="choice" data-value="happy" type="button">Iya nih senang</button>
+        <button class="choice" data-value="nomood" type="button">Ga mood</button>
+        <button class="choice" data-value="flat" type="button">Biasa aja nih</button>
+      </div>
+      <div class="bottom-action hidden" id="sceneOneNextWrap">
+        <button id="sceneOneNext" class="next-button" type="button">Selanjutnya</button>
+      </div>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-info">
-      <strong>Galaxy Dreamscape</strong>
-      Galaxy spiral lebih halus, planet dan bulan lebih natural, meteor lembut, dan lirik mengikuti musik.
+  <div class="scene-two-note hidden" id="sceneTwoOverlay">
+    <div class="card slim">
+      <span class="eyebrow">Taman Mawar</span>
+      <h2 class="title" id="sceneTwoTitle" style="font-size: clamp(1.85rem, 4vw, 3.2rem);">Haiii Tiwi, ini taman bunga buat kamu ❤</h2>
+      <p class="message" id="sceneTwoMessage">Semoga kamu sukaa yaa. Aku bikinin taman mawar kecil yang mekar pelan buat nemenin suasanamu.</p>
+      <div class="choices" id="sceneTwoChoices">
+        <button class="choice" data-value="like" type="button">Suka</button>
+        <button class="choice" data-value="dislike" type="button">Tidak suka</button>
+      </div>
+      <div class="bottom-action hidden" id="sceneTwoNextWrap">
+        <button id="sceneTwoNext" class="next-button" type="button">Selanjutnya</button>
+      </div>
     </div>
-    <div class="controls">
-      <button id="playButton" type="button">Play Lagu</button>
-      <button id="nextLyricButton" type="button">Lirik Berikutnya</button>
+  </div>
+
+  <div class="overlay hidden" id="sceneThreeOverlay">
+    <div class="album-shell">
+      <div class="album-book">
+        <div class="album-page">
+          <img id="albumImage" class="album-image" src="1.jpeg" alt="Album Tiwi">
+        </div>
+        <div class="album-note">
+          <div>
+            <span class="eyebrow">Album orang cantik</span>
+            <h2 id="albumTitle">Halaman kenangan buat Tiwi</h2>
+            <p id="albumText">Geser pelan yaa.</p>
+            <div class="album-counter" id="albumCounter">Foto 1 dari 7</div>
+            <div class="album-love" id="albumLove">Love you Tiwi ❤❤</div>
+          </div>
+          <div class="album-nav">
+            <button id="prevPhoto" class="album-button" type="button">Geser Sebelumnya</button>
+            <button id="nextPhoto" class="album-button" type="button">Geser Selanjutnya</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -189,33 +396,74 @@
     const canvas = document.getElementById("scene");
     const ctx = canvas.getContext("2d");
     const music = document.getElementById("music");
-    const lyricMain = document.getElementById("lyricMain");
-    const lyricSub = document.getElementById("lyricSub");
     const playButton = document.getElementById("playButton");
-    const nextLyricButton = document.getElementById("nextLyricButton");
+
+    const sceneOneOverlay = document.getElementById("sceneOneOverlay");
+    const sceneOneMessage = document.getElementById("sceneOneMessage");
+    const sceneOneChoices = document.getElementById("sceneOneChoices");
+    const sceneOneNextWrap = document.getElementById("sceneOneNextWrap");
+    const sceneOneNext = document.getElementById("sceneOneNext");
+
+    const sceneTwoOverlay = document.getElementById("sceneTwoOverlay");
+    const sceneTwoMessage = document.getElementById("sceneTwoMessage");
+    const sceneTwoChoices = document.getElementById("sceneTwoChoices");
+    const sceneTwoNextWrap = document.getElementById("sceneTwoNextWrap");
+    const sceneTwoNext = document.getElementById("sceneTwoNext");
+
+    const sceneThreeOverlay = document.getElementById("sceneThreeOverlay");
+    const albumImage = document.getElementById("albumImage");
+    const albumTitle = document.getElementById("albumTitle");
+    const albumText = document.getElementById("albumText");
+    const albumCounter = document.getElementById("albumCounter");
+    const albumLove = document.getElementById("albumLove");
+    const prevPhoto = document.getElementById("prevPhoto");
+    const nextPhoto = document.getElementById("nextPhoto");
 
     let w = 0;
     let h = 0;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
     let time = 0;
-    let backgroundStars = [];
-    let galaxyDust = [];
-    let brightStars = [];
-    let meteors = [];
-    let planets = [];
-    let lyricIndex = 0;
-    let lyricFrame = null;
+    let currentScene = 1;
+    let sceneTwoStartedAt = 0;
+    let sceneTwoPromptShown = false;
+    let albumIndex = 0;
 
-    const lyrics = [
-      { time: 0, main: "Say you want the moon", sub: "Watch me learn to fly" },
-      { time: 3, main: "Ain't no mountain you could point to", sub: "I wouldn't climb" },
-      { time: 8, main: "It's crazy, but it's true", sub: "There's nothing I won't do" },
-      { time: 13, main: "I'd risk it all for you", sub: "" },
-      { time: 18, main: "Keep your eyes on the sky", sub: "Hear the stars sing too" }
+    let introLights = [];
+    let sparkles = [];
+    let hearts = [];
+    let roses = [];
+    let butterflies = [];
+    let fireflies = [];
+    let petals = [];
+    let stars = [];
+    let hazes = [];
+    let galaxyDust = [];
+    let planets = [];
+
+    const photos = ["1.jpeg", "2.jpeg", "3.jpeg", "4.jpeg", "5.jpeg", "6.jpeg", "7.jpeg"];
+
+    const introReplies = {
+      happy: "Wadoh kalo begitu aku bantu harimu menjadi semakin baikk, jika kamu mau klik tombol selanjutnya di bawah yaa.",
+      nomood: "Wadoh kalo begitu aku bantu harimu menjadi semakin baikk, jika kamu mau klik tombol selanjutnya di bawah yaa.",
+      flat: "Wadoh kalo begitu aku bantu harimu menjadi semakin baikk, jika kamu mau klik tombol selanjutnya di bawah yaa."
+    };
+
+    const albumNotes = [
+      "Ini halaman pertama dari album kecil yang aku taruh di bawah langit galaxy buat kamu.",
+      "Setiap geseran foto rasanya kayak buka halaman kenangan yang pelan dan manis.",
+      "Aku bikin tampilannya seperti buku album supaya lebih hangat dilihatnya.",
+      "Bintang dan planetnya tetap nemenin, tapi fokusnya sekarang ada di foto-foto ini.",
+      "Kalau kamu senyum pas lihat halaman ini, berarti album ini berhasil manisnya.",
+      "Tinggal sedikit lagi sampai halaman terakhir, nikmatin dulu yaa suasananya.",
+      "Halaman terakhir ini aku simpan khusus buat bilang sesuatu yang sederhana tapi tulus."
     ];
 
     function rand(min, max) {
       return Math.random() * (max - min) + min;
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
     }
 
     function resize() {
@@ -227,446 +475,628 @@
       canvas.style.width = w + "px";
       canvas.style.height = h + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      buildScene();
+      buildAssets();
     }
 
-    function buildScene() {
-      backgroundStars = [];
+    function buildAssets() {
+      introLights = [];
+      sparkles = [];
+      hearts = [];
+      roses = [];
+      butterflies = [];
+      fireflies = [];
+      petals = [];
+      stars = [];
+      hazes = [];
       galaxyDust = [];
-      brightStars = [];
-      meteors = [];
       planets = [];
 
-      const bgCount = Math.floor((w * h) / 2200);
-      const dustCount = Math.floor((w * h) / 260);
-
-      for (let i = 0; i < bgCount; i++) {
-        backgroundStars.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          r: rand(0.35, 1.5),
-          alpha: rand(0.18, 0.82),
-          base: rand(0.18, 0.82),
-          speed: rand(0.012, 0.04),
-          phase: rand(0, Math.PI * 2),
-          hue: rand(205, 235)
-        });
-      }
-
-      for (let i = 0; i < dustCount; i++) {
-        const maxRadius = Math.min(w, h) * 0.44;
-        const dist = Math.pow(Math.random(), 1.7) * maxRadius;
-        const arm = (i % 4) * ((Math.PI * 2) / 4);
-        const spiral = dist * 0.03;
-        const jitter = rand(-0.45, 0.45);
-        const palette = [32, 40, 224, 240, 286, 316];
-        galaxyDust.push({
-          dist,
-          angle: arm + spiral + jitter,
-          size: rand(0.5, 2.1) * (1.1 - dist / maxRadius),
-          alpha: rand(0.08, 0.48),
-          hue: palette[Math.floor(Math.random() * palette.length)],
-          drift: rand(0.00003, 0.0001),
-          squash: rand(0.28, 0.38),
-          depth: rand(0.88, 1.16)
-        });
-      }
-
-      for (let i = 0; i < 36; i++) {
-        brightStars.push({
+      for (let i = 0; i < Math.max(24, Math.floor((w * h) / 30000)); i++) {
+        introLights.push({
           x: rand(0, w),
           y: rand(0, h),
-          glow: rand(10, 26),
-          alpha: rand(0.15, 0.42),
-          pulse: rand(0.014, 0.04),
+          r: rand(110, 250),
+          hue: [328, 344, 20, 286][i % 4],
+          alpha: rand(0.05, 0.14),
+          dx: rand(-0.08, 0.08),
+          dy: rand(-0.06, 0.06)
+        });
+      }
+
+      for (let i = 0; i < Math.max(42, Math.floor((w * h) / 18000)); i++) {
+        sparkles.push({
+          x: rand(0, w),
+          y: rand(0, h),
+          r: rand(0.8, 2.2),
+          glow: rand(8, 18),
+          speed: rand(0.01, 0.04),
+          phase: rand(0, Math.PI * 2),
+          alpha: rand(0.18, 0.58),
+          hue: rand(195, 360)
+        });
+      }
+
+      for (let i = 0; i < 18; i++) {
+        hearts.push({
+          x: rand(0, w),
+          y: rand(h * 0.18, h * 0.9),
+          size: rand(10, 24),
+          sway: rand(8, 22),
+          speed: rand(0.008, 0.018),
+          phase: rand(0, Math.PI * 2),
+          alpha: rand(0.12, 0.28)
+        });
+      }
+
+      const roseCount = Math.max(7, Math.min(14, Math.floor(w / 110)));
+      for (let i = 0; i < roseCount; i++) {
+        roses.push({
+          x: ((i + 0.5) / roseCount) * w + rand(-22, 22),
+          stemHeight: rand(h * 0.22, h * 0.42),
+          sway: rand(7, 18),
+          phase: rand(0, Math.PI * 2),
+          bloomDelay: rand(0, 1.6),
+          bloomScale: rand(18, 34),
+          hue: [346, 352, 338, 0, 14][i % 5],
+          leafTilt: rand(10, 24)
+        });
+      }
+
+      for (let i = 0; i < 9; i++) {
+        butterflies.push({
+          orbitIndex: i % Math.max(1, roses.length),
+          radius: rand(42, 92),
+          speed: rand(0.01, 0.024),
+          phase: rand(0, Math.PI * 2),
+          wing: rand(8, 14),
+          hue: [28, 48, 332, 210][i % 4]
+        });
+      }
+
+      for (let i = 0; i < 26; i++) {
+        fireflies.push({
+          x: rand(0, w),
+          y: rand(h * 0.22, h * 0.92),
+          r: rand(2, 4.2),
+          speed: rand(0.014, 0.035),
           phase: rand(0, Math.PI * 2)
         });
       }
 
+      for (let i = 0; i < 42; i++) {
+        petals.push({
+          x: rand(-40, w + 40),
+          y: rand(-h * 0.3, h),
+          size: rand(5, 11),
+          vx: rand(-0.4, 0.4),
+          vy: rand(0.4, 1.05),
+          phase: rand(0, Math.PI * 2),
+          spin: rand(0.015, 0.045),
+          alpha: rand(0.14, 0.32)
+        });
+      }
+
+      for (let i = 0; i < Math.max(110, Math.floor((w * h) / 7000)); i++) {
+        stars.push({
+          x: rand(0, w),
+          y: rand(0, h),
+          r: rand(0.45, 1.7),
+          glow: rand(6, 18),
+          alpha: rand(0.18, 0.66),
+          speed: rand(0.01, 0.045),
+          phase: rand(0, Math.PI * 2),
+          hue: rand(195, 240)
+        });
+      }
+
+      for (let i = 0; i < Math.max(180, Math.floor((w * h) / 1700)); i++) {
+        const dist = Math.pow(Math.random(), 1.6) * Math.min(w, h) * 0.45;
+        galaxyDust.push({
+          dist,
+          angle: (i % 4) * (Math.PI / 2) + dist * 0.032 + rand(-0.4, 0.4),
+          size: rand(0.6, 2.1),
+          alpha: rand(0.06, 0.28),
+          hue: [210, 226, 296, 20, 334][i % 5],
+          drift: rand(0.00003, 0.00008),
+          squash: rand(0.28, 0.42),
+          depth: rand(0.88, 1.14)
+        });
+      }
+
+      hazes = [
+        { x: w * 0.18, y: h * 0.18, r: Math.min(w, h) * 0.24, color: "rgba(255, 168, 193, 0.12)" },
+        { x: w * 0.83, y: h * 0.16, r: Math.min(w, h) * 0.21, color: "rgba(148, 170, 255, 0.12)" },
+        { x: w * 0.5, y: h * 0.82, r: Math.min(w, h) * 0.3, color: "rgba(255, 214, 165, 0.08)" }
+      ];
+
       planets = [
         {
           type: "moon",
-          cx: w * 0.14,
+          cx: w * 0.12,
           cy: h * 0.2,
-          radius: Math.min(w, h) * 0.048,
-          orbitX: 12,
-          orbitY: 8,
-          speed: 0.0006
+          radius: Math.min(w, h) * 0.054,
+          orbitX: 14,
+          orbitY: 10,
+          speed: 0.0007,
+          glow: 1.45
         },
         {
           type: "planet",
-          cx: w * 0.84,
-          cy: h * 0.24,
-          radius: Math.min(w, h) * 0.073,
-          orbitX: 18,
-          orbitY: 12,
-          speed: 0.00036,
-          ring: true
+          cx: w * 0.87,
+          cy: h * 0.18,
+          radius: Math.min(w, h) * 0.078,
+          orbitX: 22,
+          orbitY: 14,
+          speed: 0.00034,
+          spin: 0.014,
+          ring: true,
+          palette: {
+            light: "rgba(255, 211, 181, 0.98)",
+            mid: "rgba(207, 134, 112, 0.95)",
+            dark: "rgba(92, 52, 68, 0.98)",
+            band: "rgba(255, 228, 214, 0.58)",
+            ring: "rgba(255, 220, 210, 0.56)",
+            glow: "rgba(255, 171, 153, 0.14)"
+          }
         },
         {
           type: "planet",
-          cx: w * 0.78,
-          cy: h * 0.75,
-          radius: Math.min(w, h) * 0.03,
-          orbitX: 10,
-          orbitY: 6,
-          speed: 0.00092,
-          ring: false
+          cx: w * 0.91,
+          cy: h * 0.76,
+          radius: Math.min(w, h) * 0.05,
+          orbitX: 16,
+          orbitY: 10,
+          speed: 0.00076,
+          spin: -0.016,
+          ring: false,
+          palette: {
+            light: "rgba(185, 220, 255, 0.98)",
+            mid: "rgba(106, 156, 226, 0.95)",
+            dark: "rgba(35, 61, 111, 0.98)",
+            band: "rgba(219, 236, 255, 0.5)",
+            ring: "rgba(255,255,255,0)",
+            glow: "rgba(128, 171, 255, 0.13)"
+          }
         }
       ];
     }
 
-    function drawBackground() {
+    function drawGlow(x, y, r, color) {
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawHeart(x, y, size, alpha) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(size / 20, size / 20);
+      ctx.fillStyle = `rgba(255, 197, 214, ${alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(0, 6);
+      ctx.bezierCurveTo(0, 1, -8, -4, -12, 0);
+      ctx.bezierCurveTo(-16, 5, -11, 12, 0, 20);
+      ctx.bezierCurveTo(11, 12, 16, 5, 12, 0);
+      ctx.bezierCurveTo(8, -4, 0, 1, 0, 6);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawSceneOne() {
       const bg = ctx.createLinearGradient(0, 0, 0, h);
-      bg.addColorStop(0, "#010208");
-      bg.addColorStop(0.5, "#040715");
-      bg.addColorStop(1, "#02030a");
+      bg.addColorStop(0, "#2a1025");
+      bg.addColorStop(0.45, "#421a33");
+      bg.addColorStop(1, "#1a0b17");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, w, h);
 
-      const haze = ctx.createRadialGradient(w * 0.53, h * 0.46, 20, w * 0.53, h * 0.46, Math.min(w, h) * 0.55);
-      haze.addColorStop(0, "rgba(255,220,165,0.14)");
-      haze.addColorStop(0.22, "rgba(255,163,217,0.08)");
-      haze.addColorStop(0.46, "rgba(107,122,255,0.11)");
-      haze.addColorStop(0.72, "rgba(97,54,181,0.05)");
-      haze.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = haze;
-      ctx.fillRect(0, 0, w, h);
+      for (const light of introLights) {
+        light.x += light.dx;
+        light.y += light.dy;
+        if (light.x < -60) light.x = w + 60;
+        if (light.x > w + 60) light.x = -60;
+        if (light.y < -60) light.y = h + 60;
+        if (light.y > h + 60) light.y = -60;
+        drawGlow(light.x, light.y, light.r, `hsla(${light.hue}, 100%, 74%, ${light.alpha})`);
+      }
+
+      for (const sparkle of sparkles) {
+        const pulse = (Math.sin(time * sparkle.speed + sparkle.phase) + 1) * 0.5;
+        const alpha = sparkle.alpha + pulse * 0.3;
+        drawGlow(sparkle.x, sparkle.y, sparkle.glow, `hsla(${sparkle.hue}, 100%, 84%, ${alpha * 0.18})`);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(sparkle.x, sparkle.y, sparkle.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      for (const heart of hearts) {
+        const x = heart.x + Math.cos(time * heart.speed + heart.phase) * heart.sway;
+        const y = heart.y + Math.sin(time * heart.speed * 0.8 + heart.phase) * 10;
+        drawGlow(x, y, heart.size * 2, `rgba(255, 172, 205, ${heart.alpha * 0.3})`);
+        drawHeart(x, y, heart.size, heart.alpha);
+      }
     }
 
-    function drawBackgroundStars() {
-      for (const star of backgroundStars) {
-        const flicker = (Math.sin(time * star.speed + star.phase) + 1) / 2;
-        const alpha = star.base * 0.7 + flicker * 0.45;
+    function drawRoseBloom(cx, cy, bloom, hue) {
+      const layers = 6;
+      for (let layer = 0; layer < layers; layer++) {
+        const petals = 5 + layer;
+        const radius = bloom * (0.16 + layer * 0.12);
+        for (let i = 0; i < petals; i++) {
+          const angle = (Math.PI * 2 * i) / petals + layer * 0.3 + Math.sin(time * 0.004 + layer) * 0.08;
+          const px = cx + Math.cos(angle) * radius;
+          const py = cy + Math.sin(angle) * radius * 0.78;
+          ctx.fillStyle = `hsla(${hue + layer * 2}, 88%, ${72 - layer * 3}%, ${0.94 - layer * 0.05})`;
+          ctx.beginPath();
+          ctx.ellipse(px, py, bloom * (0.16 + layer * 0.02), bloom * (0.1 + layer * 0.015), angle, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.fillStyle = "rgba(255, 219, 120, 0.92)";
+      ctx.beginPath();
+      ctx.arc(cx, cy, bloom * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-        const glow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.r * 7.5);
-        glow.addColorStop(0, `hsla(${star.hue},100%,92%,${alpha * 0.55})`);
-        glow.addColorStop(0.45, `hsla(${star.hue},100%,86%,${alpha * 0.18})`);
-        glow.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = glow;
+    function drawSceneTwo() {
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, "#28152d");
+      bg.addColorStop(0.42, "#402044");
+      bg.addColorStop(1, "#160d18");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      drawGlow(w * 0.24, h * 0.15, Math.min(w, h) * 0.28, "rgba(255, 186, 216, 0.16)");
+      drawGlow(w * 0.82, h * 0.2, Math.min(w, h) * 0.22, "rgba(198, 178, 255, 0.12)");
+      drawGlow(w * 0.54, h * 0.8, Math.min(w, h) * 0.32, "rgba(255, 216, 179, 0.1)");
+
+      ctx.fillStyle = "rgba(20, 63, 37, 0.84)";
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      ctx.quadraticCurveTo(w * 0.2, h * 0.78, w * 0.42, h * 0.86);
+      ctx.quadraticCurveTo(w * 0.62, h * 0.95, w, h * 0.82);
+      ctx.lineTo(w, h);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.lineCap = "round";
+
+      const sceneTwoTime = Math.max(0, (time - sceneTwoStartedAt) / 60);
+      const bloomProgress = Math.min(1, sceneTwoTime / 6.2);
+      const butterflyProgress = Math.max(0, Math.min(1, (sceneTwoTime - 4.8) / 2));
+
+      for (const rose of roses) {
+        const sway = Math.sin(time * 0.01 + rose.phase) * rose.sway;
+        const baseY = h * 0.92;
+        const heightGrow = rose.stemHeight * Math.min(1, bloomProgress * 1.2);
+        const bloomX = rose.x + sway;
+        const bloomY = baseY - heightGrow;
+        const bloomSize = rose.bloomScale * Math.max(0.08, Math.min(1, bloomProgress * 1.35 - rose.bloomDelay * 0.16));
+
+        ctx.strokeStyle = "rgba(116, 208, 123, 0.92)";
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r * 7.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(rose.x, baseY);
+        ctx.quadraticCurveTo(rose.x + sway * 0.4, baseY - heightGrow * 0.45, bloomX, bloomY);
+        ctx.stroke();
 
+        ctx.strokeStyle = "rgba(89, 184, 108, 0.78)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(rose.x + sway * 0.18, baseY - heightGrow * 0.36);
+        ctx.quadraticCurveTo(rose.x - rose.leafTilt, baseY - heightGrow * 0.45, rose.x - 5, baseY - heightGrow * 0.25);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(rose.x + sway * 0.25, baseY - heightGrow * 0.6);
+        ctx.quadraticCurveTo(rose.x + rose.leafTilt, baseY - heightGrow * 0.7, rose.x + 8, baseY - heightGrow * 0.44);
+        ctx.stroke();
+
+        drawGlow(bloomX, bloomY, bloomSize * 2.2, `hsla(${rose.hue}, 100%, 76%, 0.22)`);
+        drawRoseBloom(bloomX, bloomY, bloomSize, rose.hue);
+      }
+
+      for (const petal of petals) {
+        petal.x += petal.vx + Math.sin(time * petal.spin + petal.phase) * 0.22;
+        petal.y += petal.vy;
+        if (petal.y > h + 20) {
+          petal.y = -18;
+          petal.x = rand(-20, w + 20);
+        }
+        if (petal.x < -30) petal.x = w + 30;
+        if (petal.x > w + 30) petal.x = -30;
+
+        ctx.save();
+        ctx.translate(petal.x, petal.y);
+        ctx.rotate(time * petal.spin + petal.phase);
+        ctx.fillStyle = `rgba(255, 200, 214, ${petal.alpha})`;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, petal.size, petal.size * 0.58, Math.PI * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      if (butterflyProgress > 0) {
+        butterflies.forEach((butterfly, index) => {
+          const rose = roses[butterfly.orbitIndex];
+          const sway = Math.sin(time * 0.01 + rose.phase) * rose.sway;
+          const centerX = rose.x + sway;
+          const centerY = h * 0.92 - rose.stemHeight * Math.min(1, bloomProgress * 1.2);
+          const angle = time * butterfly.speed + butterfly.phase;
+          const flyX = centerX + Math.cos(angle) * butterfly.radius * butterflyProgress;
+          const flyY = centerY - 18 + Math.sin(angle * 1.5) * butterfly.radius * 0.35 * butterflyProgress;
+          const flap = Math.sin(time * 0.35 + index) * butterfly.wing;
+
+          drawGlow(flyX, flyY, butterfly.wing * 2.8, `hsla(${butterfly.hue}, 100%, 78%, 0.12)`);
+          ctx.save();
+          ctx.translate(flyX, flyY);
+          ctx.rotate(Math.sin(angle) * 0.25);
+          ctx.fillStyle = `hsla(${butterfly.hue}, 100%, 76%, 0.9)`;
+          ctx.beginPath();
+          ctx.ellipse(-butterfly.wing * 0.38, 0, butterfly.wing, Math.max(4, flap), -0.5, 0, Math.PI * 2);
+          ctx.ellipse(butterfly.wing * 0.38, 0, butterfly.wing, Math.max(4, flap), 0.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(72, 44, 42, 0.8)";
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(0, -6);
+          ctx.lineTo(0, 7);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
+      for (const fly of fireflies) {
+        const pulse = (Math.sin(time * fly.speed + fly.phase) + 1) * 0.5;
+        drawGlow(fly.x, fly.y, fly.r * 6, `rgba(255, 231, 152, ${0.16 + pulse * 0.22})`);
+        ctx.fillStyle = `rgba(255, 239, 182, ${0.26 + pulse * 0.48})`;
+        ctx.beginPath();
+        ctx.arc(fly.x, fly.y, fly.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawStars() {
+      for (const star of stars) {
+        const pulse = (Math.sin(time * star.speed + star.phase) + 1) * 0.5;
+        const alpha = star.alpha + pulse * 0.34;
+        drawGlow(star.x, star.y, star.glow, `hsla(${star.hue}, 100%, 84%, ${alpha * 0.18})`);
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
         ctx.fill();
-
-        if (star.r > 1.08 && alpha > 0.5) {
-          ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.45})`;
-          ctx.lineWidth = 0.7;
+        if (star.r > 1.05 && alpha > 0.46) {
+          ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.52})`;
+          ctx.lineWidth = 0.8;
           ctx.beginPath();
-          ctx.moveTo(star.x - star.r * 3, star.y);
-          ctx.lineTo(star.x + star.r * 3, star.y);
-          ctx.moveTo(star.x, star.y - star.r * 3);
-          ctx.lineTo(star.x, star.y + star.r * 3);
+          ctx.moveTo(star.x - star.glow * 0.28, star.y);
+          ctx.lineTo(star.x + star.glow * 0.28, star.y);
+          ctx.moveTo(star.x, star.y - star.glow * 0.28);
+          ctx.lineTo(star.x, star.y + star.glow * 0.28);
           ctx.stroke();
         }
       }
     }
 
-    function drawGalaxy() {
-      const cx = w * 0.53;
-      const cy = h * 0.46;
-
+    function drawGalaxyDust() {
+      const cx = w * 0.52;
+      const cy = h * 0.5;
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(-0.34 + Math.sin(time * 0.00005) * 0.03);
-
       for (const dust of galaxyDust) {
         dust.angle += dust.drift;
-        const spin = time * 0.00025;
-        const angle = dust.angle + spin;
+        const angle = dust.angle + time * 0.00028;
         const x = Math.cos(angle) * dust.dist * dust.depth;
         const y = Math.sin(angle) * dust.dist * dust.squash * dust.depth;
-
-        ctx.fillStyle = `hsla(${dust.hue},100%,74%,${dust.alpha * 0.16})`;
+        ctx.fillStyle = `hsla(${dust.hue}, 100%, 78%, ${dust.alpha * 0.26})`;
         ctx.beginPath();
-        ctx.arc(x, y, dust.size * 5.4, 0, Math.PI * 2);
+        ctx.arc(x, y, dust.size * 1.8, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.fillStyle = `hsla(${dust.hue},100%,80%,${dust.alpha * 0.28})`;
+        ctx.fillStyle = `hsla(${dust.hue}, 100%, 82%, ${dust.alpha * 0.1})`;
         ctx.beginPath();
-        ctx.arc(x, y, dust.size * 1.85, 0, Math.PI * 2);
+        ctx.arc(x, y, dust.size * 4.8, 0, Math.PI * 2);
         ctx.fill();
-
-        if (dust.size > 0.9) {
-          ctx.fillStyle = `rgba(255,255,255,${Math.min(dust.alpha + 0.08, 0.85)})`;
-          ctx.beginPath();
-          ctx.arc(x, y, Math.max(0.35, dust.size * 0.38), 0, Math.PI * 2);
-          ctx.fill();
-        }
       }
-
       const core = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.min(w, h) * 0.15);
-      core.addColorStop(0, "rgba(255,248,228,0.96)");
-      core.addColorStop(0.14, "rgba(255,234,188,0.84)");
-      core.addColorStop(0.42, "rgba(255,183,110,0.26)");
-      core.addColorStop(1, "rgba(255,183,110,0)");
+      core.addColorStop(0, "rgba(255, 246, 222, 0.98)");
+      core.addColorStop(0.15, "rgba(255, 224, 188, 0.78)");
+      core.addColorStop(0.45, "rgba(255, 166, 116, 0.22)");
+      core.addColorStop(1, "rgba(255, 166, 116, 0)");
       ctx.fillStyle = core;
       ctx.beginPath();
       ctx.arc(0, 0, Math.min(w, h) * 0.15, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.restore();
     }
 
-    function drawBrightStars() {
-      for (const star of brightStars) {
-        const pulse = (Math.sin(time * star.pulse + star.phase) + 1) / 2;
-        const alpha = star.alpha + pulse * 0.35;
-
-        const glow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.glow);
-        glow.addColorStop(0, `rgba(255,255,255,${alpha})`);
-        glow.addColorStop(0.3, `rgba(180,205,255,${alpha * 0.28})`);
-        glow.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.glow, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.8})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(star.x - star.glow * 0.38, star.y);
-        ctx.lineTo(star.x + star.glow * 0.38, star.y);
-        ctx.moveTo(star.x, star.y - star.glow * 0.38);
-        ctx.lineTo(star.x, star.y + star.glow * 0.38);
-        ctx.stroke();
-      }
-    }
-
-    function drawMoon(x, y, r) {
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 2.4);
-      glow.addColorStop(0, "rgba(255,255,255,0.16)");
-      glow.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(x, y, r * 2.4, 0, Math.PI * 2);
-      ctx.fill();
-
-      const grad = ctx.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.08, x, y, r);
-      grad.addColorStop(0, "rgba(230,234,240,0.96)");
-      grad.addColorStop(0.5, "rgba(179,186,198,0.92)");
-      grad.addColorStop(1, "rgba(84,92,107,0.98)");
+    function drawMoon(x, y, r, glowFactor) {
+      drawGlow(x, y, r * 3 * glowFactor, `rgba(255, 249, 232, ${0.22 * glowFactor})`);
+      drawGlow(x - r * 0.2, y - r * 0.16, r * 1.5, "rgba(255,255,255,0.18)");
+      const grad = ctx.createRadialGradient(x - r * 0.32, y - r * 0.36, r * 0.08, x, y, r);
+      grad.addColorStop(0, "rgba(247, 246, 240, 0.98)");
+      grad.addColorStop(0.52, "rgba(205, 211, 224, 0.95)");
+      grad.addColorStop(1, "rgba(116, 126, 146, 0.98)");
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.fillStyle = "rgba(82, 88, 102, 0.34)";
-      const craters = [
-        [-0.28, -0.12, 0.15],
-        [0.16, 0.05, 0.12],
-        [0.08, -0.33, 0.08],
-        [-0.04, 0.24, 0.09]
-      ];
-      for (const c of craters) {
+      ctx.fillStyle = "rgba(102, 108, 128, 0.22)";
+      [[-0.28, -0.12, 0.14], [0.18, 0.06, 0.1], [0.05, -0.32, 0.08], [-0.03, 0.2, 0.09]].forEach((c) => {
         ctx.beginPath();
         ctx.arc(x + r * c[0], y + r * c[1], r * c[2], 0, Math.PI * 2);
         ctx.fill();
-      }
+      });
     }
 
-    function drawPlanet(x, y, r, ring, palette) {
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 2.6);
-      glow.addColorStop(0, "rgba(255,255,255,0.11)");
-      glow.addColorStop(0.5, `${palette.outerGlow}`);
-      glow.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(x, y, r * 2.6, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (ring) {
+    function drawPlanet(x, y, r, planet) {
+      drawGlow(x, y, r * 2.8, planet.palette.glow);
+      if (planet.ring) {
         ctx.save();
         ctx.translate(x, y);
-        ctx.rotate(-0.28);
-        ctx.strokeStyle = palette.ring;
+        ctx.rotate(-0.3 + Math.sin(time * 0.002) * 0.03);
+        ctx.strokeStyle = planet.palette.ring;
         ctx.lineWidth = r * 0.16;
         ctx.beginPath();
-        ctx.ellipse(0, 0, r * 1.85, r * 0.52, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, r * 1.86, r * 0.55, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
 
-      const grad = ctx.createRadialGradient(x - r * 0.28, y - r * 0.34, r * 0.09, x, y, r);
-      grad.addColorStop(0, palette.light);
-      grad.addColorStop(0.45, palette.mid);
-      grad.addColorStop(1, palette.dark);
+      const grad = ctx.createRadialGradient(x - r * 0.28, y - r * 0.34, r * 0.08, x, y, r);
+      grad.addColorStop(0, planet.palette.light);
+      grad.addColorStop(0.46, planet.palette.mid);
+      grad.addColorStop(1, planet.palette.dark);
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = palette.band;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(time * planet.spin * 0.01);
+      ctx.strokeStyle = planet.palette.band;
       ctx.lineWidth = r * 0.08;
-      ctx.globalAlpha = 0.28;
+      ctx.globalAlpha = 0.32;
       for (let i = -2; i <= 2; i++) {
         ctx.beginPath();
-        ctx.arc(x, y + i * r * 0.18, r * 0.88, Math.PI * 0.14, Math.PI * 0.86);
+        ctx.arc(0, i * r * 0.13, r * 0.9, Math.PI * 0.14, Math.PI * 0.86);
         ctx.stroke();
       }
+      ctx.restore();
       ctx.globalAlpha = 1;
     }
 
-    function drawPlanets() {
+    function drawSceneThree() {
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, "#050611");
+      bg.addColorStop(0.42, "#0a1024");
+      bg.addColorStop(1, "#04050d");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      for (const haze of hazes) {
+        drawGlow(haze.x, haze.y, haze.r, haze.color);
+      }
+
+      drawStars();
+      drawGalaxyDust();
+
       for (const planet of planets) {
         const px = planet.cx + Math.cos(time * planet.speed) * planet.orbitX;
-        const py = planet.cy + Math.sin(time * planet.speed * 0.8) * planet.orbitY;
-
+        const py = planet.cy + Math.sin(time * planet.speed * 0.9) * planet.orbitY;
         if (planet.type === "moon") {
-          drawMoon(px, py, planet.radius);
-        } else if (planet.ring) {
-          drawPlanet(px, py, planet.radius, true, {
-            light: "rgba(236, 201, 146, 0.98)",
-            mid: "rgba(180, 125, 74, 0.95)",
-            dark: "rgba(70, 48, 40, 0.98)",
-            band: "rgba(255, 225, 188, 0.75)",
-            ring: "rgba(236, 218, 196, 0.5)",
-            outerGlow: "rgba(220, 171, 110, 0.1)"
-          });
+          drawMoon(px, py, planet.radius, planet.glow * (1 + Math.sin(time * 0.01) * 0.12));
         } else {
-          drawPlanet(px, py, planet.radius, false, {
-            light: "rgba(165, 203, 255, 0.98)",
-            mid: "rgba(84, 132, 190, 0.95)",
-            dark: "rgba(32, 51, 95, 0.98)",
-            band: "rgba(198, 225, 255, 0.62)",
-            ring: "rgba(255,255,255,0)",
-            outerGlow: "rgba(110, 158, 255, 0.09)"
-          });
+          drawPlanet(px, py, planet.radius, planet);
         }
       }
     }
 
-    function spawnMeteor() {
-      if (Math.random() < 0.055) {
-        meteors.push({
-          x: rand(w * 0.25, w * 1.02),
-          y: rand(-80, h * 0.26),
-          vx: rand(-8.8, -4.6),
-          vy: rand(4.8, 7.6),
-          len: rand(100, 200),
-          alpha: 1,
-          life: 0,
-          width: rand(1.1, 2.4)
-        });
+    function setScene(scene) {
+      currentScene = scene;
+      sceneOneOverlay.classList.toggle("hidden", scene !== 1);
+      sceneTwoOverlay.classList.toggle("hidden", true);
+      sceneThreeOverlay.classList.toggle("hidden", scene !== 3);
+
+      if (scene === 2) {
+        sceneTwoStartedAt = time;
+        sceneTwoPromptShown = false;
+        sceneTwoMessage.textContent = "Semoga kamu sukaa ya hehehe.";
+        sceneTwoChoices.classList.remove("hidden");
+        sceneTwoNextWrap.classList.add("hidden");
       }
     }
 
-    function drawMeteors() {
-      spawnMeteor();
-      ctx.lineCap = "round";
-
-      for (let i = meteors.length - 1; i >= 0; i--) {
-        const m = meteors[i];
-        m.x += m.vx;
-        m.y += m.vy;
-        m.life += 0.014;
-        m.alpha = 1 - m.life;
-
-        if (m.alpha <= 0) {
-          meteors.splice(i, 1);
-          continue;
-        }
-
-        const tailX = m.x - m.vx * (m.len * 0.1);
-        const tailY = m.y - m.vy * (m.len * 0.1);
-        const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
-        grad.addColorStop(0, `rgba(255,255,255,${m.alpha})`);
-        grad.addColorStop(0.32, `rgba(192,214,255,${m.alpha * 0.62})`);
-        grad.addColorStop(1, "rgba(255,255,255,0)");
-
-        ctx.beginPath();
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = m.width;
-        ctx.moveTo(m.x, m.y);
-        ctx.lineTo(tailX, tailY);
-        ctx.stroke();
-      }
+    function showSceneTwoPrompt() {
+      if (sceneTwoPromptShown) return;
+      sceneTwoPromptShown = true;
+      sceneTwoOverlay.classList.remove("hidden");
     }
 
-    function renderLyrics(index) {
-      const current = lyrics[index];
-      if (!current) return;
-      lyricMain.style.opacity = "0";
-      lyricMain.style.transform = "translateY(10px)";
-      lyricMain.style.filter = "blur(4px)";
-      lyricSub.style.opacity = "0";
-      lyricSub.style.transform = "translateY(8px)";
-      setTimeout(() => {
-        lyricMain.textContent = current.main;
-        lyricSub.textContent = current.sub || "";
-        lyricMain.style.opacity = "1";
-        lyricMain.style.transform = "translateY(0)";
-        lyricMain.style.filter = "blur(0)";
-        lyricSub.style.opacity = current.sub ? "1" : "0";
-        lyricSub.style.transform = "translateY(0)";
-      }, 150);
-    }
-
-    function syncLyrics() {
-      const t = music.currentTime;
-      let next = lyricIndex;
-      for (let i = lyrics.length - 1; i >= 0; i--) {
-        if (t >= lyrics[i].time) {
-          next = i;
-          break;
-        }
-      }
-
-      if (next !== lyricIndex) {
-        lyricIndex = next;
-        renderLyrics(lyricIndex);
-      }
-
-      lyricFrame = requestAnimationFrame(syncLyrics);
+    function updateAlbum() {
+      albumImage.src = photos[albumIndex];
+      albumCounter.textContent = `Foto ${albumIndex + 1} dari ${photos.length}`;
+      albumText.textContent = albumNotes[albumIndex];
+      albumTitle.textContent = albumIndex === photos.length - 1 ? "Halaman terakhir buat Tiwi" : "Halaman kenangan buat Tiwi";
+      albumLove.classList.toggle("show", albumIndex === photos.length - 1);
+      nextPhoto.textContent = albumIndex === photos.length - 1 ? "Balik ke Awal Album" : "Geser Selanjutnya";
     }
 
     function animate() {
       time += 1;
-      drawBackground();
-      drawBackgroundStars();
-      drawPlanets();
-      drawGalaxy();
-      drawBrightStars();
-      drawMeteors();
+
+      if (currentScene === 1) {
+        drawSceneOne();
+      } else if (currentScene === 2) {
+        drawSceneTwo();
+        if (!sceneTwoPromptShown && (time - sceneTwoStartedAt) / 60 > 7.8) {
+          showSceneTwoPrompt();
+        }
+      } else {
+        drawSceneThree();
+      }
+
       requestAnimationFrame(animate);
     }
+
+    document.querySelectorAll("#sceneOneChoices .choice").forEach((button) => {
+      button.addEventListener("click", () => {
+        sceneOneMessage.textContent = introReplies[button.dataset.value];
+        sceneOneChoices.classList.add("hidden");
+        sceneOneNextWrap.classList.remove("hidden");
+      });
+    });
+
+    sceneOneNext.addEventListener("click", () => {
+      setScene(2);
+    });
+
+    document.querySelectorAll("#sceneTwoChoices .choice").forEach((button) => {
+      button.addEventListener("click", () => {
+        sceneTwoMessage.textContent = "Wah pilihan yang bagus, semoga taman mawar ini bikin hati kamu jadi lebih hangat yaa.";
+        sceneTwoChoices.classList.add("hidden");
+        sceneTwoNextWrap.classList.remove("hidden");
+      });
+    });
+
+    sceneTwoNext.addEventListener("click", () => {
+      setScene(3);
+    });
+
+    prevPhoto.addEventListener("click", () => {
+      albumIndex = (albumIndex - 1 + photos.length) % photos.length;
+      updateAlbum();
+    });
+
+    nextPhoto.addEventListener("click", () => {
+      albumIndex = (albumIndex + 1) % photos.length;
+      updateAlbum();
+    });
 
     playButton.addEventListener("click", async () => {
       try {
         if (music.paused) {
           await music.play();
           playButton.textContent = "Pause Lagu";
-          renderLyrics(lyricIndex);
-          if (!lyricFrame) syncLyrics();
         } else {
           music.pause();
           playButton.textContent = "Play Lagu";
-          if (lyricFrame) {
-            cancelAnimationFrame(lyricFrame);
-            lyricFrame = null;
-          }
         }
       } catch (error) {
         console.error("Audio gagal diputar:", error);
       }
     });
 
-    nextLyricButton.addEventListener("click", () => {
-      lyricIndex = (lyricIndex + 1) % lyrics.length;
-      renderLyrics(lyricIndex);
-    });
-
-    music.addEventListener("ended", () => {
-      lyricIndex = 0;
-      renderLyrics(lyricIndex);
-    });
-
     window.addEventListener("resize", resize);
+
     resize();
+    setScene(1);
+    updateAlbum();
     animate();
   </script>
 </body>
